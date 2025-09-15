@@ -215,6 +215,8 @@ const AdvancedDisasterManager = ({
               </Select>
             </div>
 
+          {/* Route Selection - Hide for Emergency Train */}
+          {customForm.type !== 'emergency_train' && (
             <div>
               <label className="text-sm font-medium mb-2 block">Affected Route</label>
               <Select 
@@ -234,6 +236,56 @@ const AdvancedDisasterManager = ({
                 </SelectContent>
               </Select>
             </div>
+          )}
+
+          {/* Emergency Train Special Handling */}
+          {customForm.type === 'emergency_train' && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">🚨</span>
+                <h4 className="font-medium text-red-800">Emergency Train Insertion</h4>
+              </div>
+              <p className="text-sm text-red-700 mb-3">
+                Emergency trains receive highest priority and will be automatically assigned the optimal route. 
+                All other trains will be rescheduled to accommodate emergency passage.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-red-800 block mb-1">Emergency Route Preference</label>
+                  <Select 
+                    value={customForm.affected_route || 'A-B'} 
+                    onValueChange={(value) => setCustomForm({...customForm, affected_route: value})}
+                  >
+                    <SelectTrigger className="border-red-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A-B">Primary Route (A-B)</SelectItem>
+                      <SelectItem value="B-C">Central Route (B-C)</SelectItem>
+                      <SelectItem value="A-E">Express Route (A-E)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-red-800 block mb-1">Emergency Type</label>
+                  <Select 
+                    value={customForm.severity || 'critical'} 
+                    onValueChange={(value) => setCustomForm({...customForm, severity: value})}
+                  >
+                    <SelectTrigger className="border-red-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="critical">Medical Emergency</SelectItem>
+                      <SelectItem value="high">VIP Transport</SelectItem>
+                      <SelectItem value="high">Disaster Response</SelectItem>
+                      <SelectItem value="critical">Security Emergency</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
           </div>
 
           {/* Duration and Severity */}
