@@ -550,6 +550,7 @@ function App() {
                   routes={routes}
                   trains={hasOptimized ? optimizedTrains : trains}
                   getPriorityColor={getPriorityColor}
+                  onTrainClick={handleTrainClick}
                 />
               </CardContent>
             </Card>
