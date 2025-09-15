@@ -14,6 +14,7 @@ import PerformanceCharts from "./components/PerformanceCharts";
 import TrainDetailsModal from "./components/TrainDetailsModal";
 import AlertSystem from "./components/AlertSystem";
 import AdvancedDisasterManager from "./components/AdvancedDisasterManager";
+import WhatChangedSummary from "./components/WhatChangedSummary";
 import { 
   Train, 
   MapPin, 
