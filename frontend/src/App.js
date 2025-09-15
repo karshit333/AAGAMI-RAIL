@@ -402,6 +402,14 @@ function App() {
                 </Alert>
               )}
 
+              {/* What Changed Summary */}
+              {whatChanged && (
+                <WhatChangedSummary 
+                  whatChanged={whatChanged}
+                  isVisible={hasOptimized}
+                />
+              )}
+
               {/* Schedule Comparison */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Original Schedule */}
