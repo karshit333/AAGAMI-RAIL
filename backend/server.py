@@ -890,7 +890,8 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
     """Apply disaster scenario and re-optimize"""
     trains = SAMPLE_TRAINS
         
-    # Reset trains
+    # Reset trains and keep original for comparison
+    original_trains = copy.deepcopy(trains)
     for train in trains:
         train.delay_minutes = 0
         train.optimized_arrival = None
@@ -900,14 +901,19 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
         train.explanation = None
         train.status = "on_time"
     
-    optimized_trains, explanations = optimize_with_disasters(trains, scenario.disasters)
-    kpis = calculate_advanced_kpis(trains, optimized_trains, scenario.disasters)
-    # Generate enhanced summary using new functions
-    what_changed = generate_what_changed_summary(trains, optimized_trains, scenario.disasters)
-    enhanced_explanations = generate_enhanced_explanations(optimized_trains, scenario.disasters)
+    optimized_trains, basic_explanations = optimize_with_disasters(trains, scenario.disasters)
+    kpis = calculate_advanced_kpis(original_trains, optimized_trains, scenario.disasters)
     
-    # Create a simple disaster summary for backward compatibility
-    disaster_summary = f"AI handled {len(scenario.disasters)} disaster(s) with {what_changed['summary_stats']['optimization_effectiveness']}% effectiveness"
+    # Generate enhanced explanations and comprehensive analysis
+    enhanced_explanations = generate_enhanced_explanations(optimized_trains, scenario.disasters)
+    what_changed = generate_what_changed_summary(original_trains, optimized_trains, scenario.disasters)
+    
+    # Create disaster summary from what_changed analysis
+    effectiveness = what_changed["summary_stats"]["optimization_effectiveness"]
+    disaster_summary = f"AI Response Effectiveness: {effectiveness}% - {what_changed['impact_analysis']['delay_impact']['description']}"
+    if what_changed["summary_stats"]["rerouted_trains"] > 0:
+        disaster_summary += f" {what_changed['summary_stats']['rerouted_trains']} trains intelligently rerouted."
+    
     alerts = check_and_generate_alerts(optimized_trains)
     
     # Update global alerts
@@ -915,12 +921,13 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
     ACTIVE_ALERTS.extend(alerts)
     
     return OptimizationResult(
-        original_trains=trains,
+        original_trains=original_trains,
         optimized_trains=optimized_trains,
         kpis=kpis,
-        explanations=explanations,
+        explanations=enhanced_explanations,
         disaster_summary=disaster_summary,
-        alerts=alerts
+        alerts=alerts,
+        what_changed=what_changed
     )
 
 
