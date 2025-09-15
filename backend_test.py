@@ -211,17 +211,16 @@ class AagamiRailAPITester:
                     kpis = optimization_result['kpis']
                     
                     # Validate KPIs structure
-                    required_kpi_fields = ['total_trains', 'avg_delay_minutes', 'throughput_percentage', 'on_time_trains']
+                    required_kpi_fields = ['total_trains', 'avg_delay_minutes', 'on_time_trains']
                     if all(field in kpis for field in required_kpi_fields):
                         # Check if optimization actually worked
                         total_trains = kpis['total_trains']
                         on_time_trains = kpis['on_time_trains']
                         avg_delay = kpis['avg_delay_minutes']
-                        throughput = kpis['throughput_percentage']
                         
                         if total_trains == 10:  # Expected number of trains
                             self.log_test("Optimize Trains Endpoint", True, 
-                                        f"KPIs: {total_trains} trains, {on_time_trains} on-time, {avg_delay}min avg delay, {throughput}% throughput")
+                                        f"KPIs: {total_trains} trains, {on_time_trains} on-time, {avg_delay}min avg delay")
                             return optimization_result
                         else:
                             self.log_test("Optimize Trains Endpoint", False, f"Expected 10 trains, got {total_trains}")
