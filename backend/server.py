@@ -852,6 +852,7 @@ async def optimize_trains(trains: List[Train] = None):
         trains = SAMPLE_TRAINS
     
     # Reset any previous optimization
+    original_trains = copy.deepcopy(trains)
     for train in trains:
         train.delay_minutes = 0
         train.optimized_arrival = None
@@ -861,8 +862,13 @@ async def optimize_trains(trains: List[Train] = None):
         train.explanation = None
         train.status = "on_time"
     
-    optimized_trains, explanations = optimize_with_disasters(trains)
-    kpis = calculate_advanced_kpis(trains, optimized_trains)
+    optimized_trains, basic_explanations = optimize_with_disasters(trains)
+    kpis = calculate_advanced_kpis(original_trains, optimized_trains)
+    
+    # Generate enhanced explanations and what changed summary
+    enhanced_explanations = generate_enhanced_explanations(optimized_trains)
+    what_changed = generate_what_changed_summary(original_trains, optimized_trains)
+    
     alerts = check_and_generate_alerts(optimized_trains)
     
     # Update global alerts
@@ -870,11 +876,12 @@ async def optimize_trains(trains: List[Train] = None):
     ACTIVE_ALERTS.extend(alerts)
     
     return OptimizationResult(
-        original_trains=trains,
+        original_trains=original_trains,
         optimized_trains=optimized_trains,
         kpis=kpis,
-        explanations=explanations,
-        alerts=alerts
+        explanations=enhanced_explanations,
+        alerts=alerts,
+        what_changed=what_changed
     )
 
 
