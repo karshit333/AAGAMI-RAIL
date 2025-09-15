@@ -535,15 +535,22 @@ async def get_performance_metrics():
     optimized_trains, _ = optimize_with_disasters(SAMPLE_TRAINS)
     kpis = calculate_advanced_kpis(SAMPLE_TRAINS, optimized_trains)
     
+    # Calculate route throughput separately for performance metrics
+    route_throughput = {}
+    for train in optimized_trains:
+        route = train.rerouted and train.new_route or train.route
+        if train.delay_minutes < 30:  # Consider successful if delay < 30 min
+            route_throughput[route] = route_throughput.get(route, 0) + 1
+    
     return PerformanceMetrics(
-        total_trains=kpis["total_trains"],
-        on_time_trains=kpis["on_time_trains"],
-        delayed_trains=kpis["delayed_trains"],
-        rerouted_trains=kpis["rerouted_trains"],
+        total_trains=int(kpis["total_trains"]),
+        on_time_trains=int(kpis["on_time_trains"]),
+        delayed_trains=int(kpis["delayed_trains"]),
+        rerouted_trains=int(kpis["rerouted_trains"]),
         avg_delay=kpis["avg_delay_minutes"],
-        max_delay=kpis["max_delay_minutes"],
+        max_delay=int(kpis["max_delay_minutes"]),
         throughput_improvement=kpis["throughput_improvement"],
-        route_throughput=kpis["route_throughput"]
+        route_throughput=route_throughput
     )
 
 
