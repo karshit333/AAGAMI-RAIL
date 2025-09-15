@@ -288,50 +288,54 @@ const AdvancedDisasterManager = ({
           )}
           </div>
 
-          {/* Duration and Severity */}
+          {/* Duration and Severity - Modified for Emergency Train */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Duration: {customForm.duration_minutes} minutes
-              </label>
-              <Slider
-                value={[customForm.duration_minutes]}
-                onValueChange={([value]) => setCustomForm({...customForm, duration_minutes: value})}
-                max={180}
-                min={5}
-                step={5}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>5 min</span>
-                <span>3 hours</span>
+            {customForm.type !== 'emergency_train' && (
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Duration: {customForm.duration_minutes} minutes
+                </label>
+                <Slider
+                  value={[customForm.duration_minutes]}
+                  onValueChange={([value]) => setCustomForm({...customForm, duration_minutes: value})}
+                  max={180}
+                  min={5}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>5 min</span>
+                  <span>3 hours</span>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">Severity Level</label>
-              <Select 
-                value={customForm.severity} 
-                onValueChange={(value) => setCustomForm({...customForm, severity: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {severityLevels.map(level => (
-                    <SelectItem key={level.value} value={level.value}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${level.color}`} />
-                        <div>
-                          <div className="font-medium">{level.label}</div>
-                          <div className="text-xs text-gray-500">{level.description}</div>
+            {customForm.type !== 'emergency_train' && (
+              <div>
+                <label className="text-sm font-medium mb-2 block">Severity Level</label>
+                <Select 
+                  value={customForm.severity} 
+                  onValueChange={(value) => setCustomForm({...customForm, severity: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {severityLevels.map(level => (
+                      <SelectItem key={level.value} value={level.value}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${level.color}`} />
+                          <div>
+                            <div className="font-medium">{level.label}</div>
+                            <div className="text-xs text-gray-500">{level.description}</div>
+                          </div>
                         </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {/* Speed Impact */}
