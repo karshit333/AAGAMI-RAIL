@@ -935,7 +935,12 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
     
     optimized_trains, explanations = optimize_with_disasters(trains, scenario.disasters)
     kpis = calculate_advanced_kpis(trains, optimized_trains, scenario.disasters)
-    disaster_summary = generate_disaster_summary(scenario.disasters, kpis, explanations)
+    # Generate enhanced summary using new functions
+    what_changed = generate_what_changed_summary(trains, optimized_trains, scenario.disasters)
+    enhanced_explanations = generate_enhanced_explanations(optimized_trains, scenario.disasters)
+    
+    # Create a simple disaster summary for backward compatibility
+    disaster_summary = f"AI handled {len(scenario.disasters)} disaster(s) with {what_changed['summary_stats']['optimization_effectiveness']}% effectiveness"
     alerts = check_and_generate_alerts(optimized_trains)
     
     # Update global alerts
