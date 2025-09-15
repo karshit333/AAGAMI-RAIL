@@ -133,15 +133,15 @@ class AagamiRailAPITester:
             
             if success:
                 routes = response.json()
-                if isinstance(routes, list) and len(routes) == 5:
+                if isinstance(routes, list) and len(routes) == 7:
                     # Validate route structure
                     required_fields = ['id', 'stations', 'path']
                     first_route = routes[0]
                     
                     if all(field in first_route for field in required_fields):
-                        # Check route IDs
+                        # Check route IDs - now expecting 7 routes including alternates
                         route_ids = set(route['id'] for route in routes)
-                        expected_ids = {'A-B', 'B-C', 'C-D', 'D-E', 'B-E'}
+                        expected_ids = {'A-B', 'B-C', 'C-D', 'D-E', 'B-E', 'A-C', 'A-E'}
                         if route_ids == expected_ids:
                             self.log_test("Get Routes Endpoint", True, f"Retrieved {len(routes)} routes")
                             return routes
@@ -151,7 +151,7 @@ class AagamiRailAPITester:
                         missing_fields = [f for f in required_fields if f not in first_route]
                         self.log_test("Get Routes Endpoint", False, f"Missing fields: {missing_fields}")
                 else:
-                    self.log_test("Get Routes Endpoint", False, f"Expected 5 routes, got {len(routes) if isinstance(routes, list) else 'non-list'}")
+                    self.log_test("Get Routes Endpoint", False, f"Expected 7 routes, got {len(routes) if isinstance(routes, list) else 'non-list'}")
             else:
                 self.log_test("Get Routes Endpoint", False, f"Status code: {response.status_code}")
                 
