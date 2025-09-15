@@ -176,67 +176,15 @@ const AdvancedDisasterManager = ({
         </CardHeader>
       </Card>
 
-      {/* Quick Scenario Application */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            Quick Disaster Scenarios
-          </CardTitle>
-          <CardDescription>Apply common disruption scenarios with AI optimization</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <Select value={selectedDisaster} onValueChange={setSelectedDisaster}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select disaster scenario" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="flood_ab">🌊 Track Flooding (A-B Route)</SelectItem>
-                <SelectItem value="equipment_failure">⚠️ Signal Equipment Failure (B-C)</SelectItem>
-                <SelectItem value="weather_slow">🌧️ Weather Speed Restrictions (Network-wide)</SelectItem>
-                <SelectItem value="vip_train">🚨 Emergency Priority Train Insertion</SelectItem>
-                <SelectItem value="breakdown_ce">🚂 Train Breakdown Blocking Track (C-D)</SelectItem>
-                <SelectItem value="multiple_disasters">🌪️ Multiple Simultaneous Disruptions</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              onClick={applySelectedDisaster}
-              disabled={!selectedDisaster || isLoading}
-              variant="destructive"
-              className="flex items-center gap-2"
-            >
-              <Brain className="h-4 w-4" />
-              {isLoading ? "AI Analyzing..." : "Apply & Optimize"}
-            </Button>
-          </div>
-
-          {/* Scenario Preview */}
-          {selectedDisaster && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-blue-800">AI Impact Prediction</span>
-              </div>
-              <p className="text-sm text-blue-700">
-                The AI will analyze this scenario and provide intelligent rerouting, delay minimization, 
-                and clear explanations of all optimization decisions made.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Custom Disaster Creator */}
+      {/* Custom Disruption Designer */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Custom Disruption Designer
+            AI-Powered Disruption Designer
           </CardTitle>
           <CardDescription>
-            Create specific operational disruptions with AI-powered impact assessment
+            Create specific operational disruptions with comprehensive AI impact assessment and intelligent response strategies
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
