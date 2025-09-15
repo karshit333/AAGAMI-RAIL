@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const TrainMap = ({ stations, routes, trains, getPriorityColor }) => {
+const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) => {
   const [animatedTrains, setAnimatedTrains] = useState([]);
 
   useEffect(() => {
