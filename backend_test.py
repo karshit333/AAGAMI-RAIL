@@ -238,6 +238,123 @@ class AagamiRailAPITester:
         
         return None
 
+    def test_get_disaster_scenarios(self):
+        """Test GET /api/disaster-scenarios endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/disaster-scenarios", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                scenarios = response.json()
+                if isinstance(scenarios, dict) and len(scenarios) == 5:
+                    # Check for expected scenario keys
+                    expected_keys = {'flood_ab', 'equipment_failure', 'weather_slow', 'vip_train', 'breakdown_ce'}
+                    scenario_keys = set(scenarios.keys())
+                    
+                    if scenario_keys == expected_keys:
+                        # Validate scenario structure
+                        first_scenario = list(scenarios.values())[0]
+                        if 'disasters' in first_scenario and 'description' in first_scenario:
+                            self.log_test("Get Disaster Scenarios Endpoint", True, f"Retrieved {len(scenarios)} scenarios")
+                            return scenarios
+                        else:
+                            self.log_test("Get Disaster Scenarios Endpoint", False, "Missing 'disasters' or 'description' fields")
+                    else:
+                        self.log_test("Get Disaster Scenarios Endpoint", False, f"Invalid scenario keys: {scenario_keys}")
+                else:
+                    self.log_test("Get Disaster Scenarios Endpoint", False, f"Expected 5 scenarios, got {len(scenarios) if isinstance(scenarios, dict) else 'non-dict'}")
+            else:
+                self.log_test("Get Disaster Scenarios Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Get Disaster Scenarios Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_apply_disaster_scenario(self, scenarios=None):
+        """Test POST /api/disaster endpoint"""
+        try:
+            if not scenarios:
+                self.log_test("Apply Disaster Scenario Endpoint", False, "No scenarios available for testing")
+                return None
+            
+            # Test with flood scenario
+            flood_scenario = scenarios.get('flood_ab')
+            if not flood_scenario:
+                self.log_test("Apply Disaster Scenario Endpoint", False, "Flood scenario not found")
+                return None
+            
+            response = requests.post(
+                f"{self.api_url}/disaster", 
+                json=flood_scenario,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            success = response.status_code == 200
+            
+            if success:
+                disaster_result = response.json()
+                required_fields = ['original_trains', 'optimized_trains', 'kpis', 'explanations']
+                
+                if all(field in disaster_result for field in required_fields):
+                    kpis = disaster_result['kpis']
+                    explanations = disaster_result['explanations']
+                    disaster_summary = disaster_result.get('disaster_summary', '')
+                    
+                    # Check if disaster had impact
+                    rerouted_trains = kpis.get('rerouted_trains', 0)
+                    delayed_trains = kpis.get('delayed_trains', 0)
+                    
+                    if rerouted_trains > 0 or delayed_trains > 0 or len(explanations) > 0:
+                        self.log_test("Apply Disaster Scenario Endpoint", True, 
+                                    f"Disaster applied: {rerouted_trains} rerouted, {delayed_trains} delayed, {len(explanations)} explanations")
+                        return disaster_result
+                    else:
+                        self.log_test("Apply Disaster Scenario Endpoint", False, "Disaster scenario had no visible impact")
+                else:
+                    missing_fields = [f for f in required_fields if f not in disaster_result]
+                    self.log_test("Apply Disaster Scenario Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_test("Apply Disaster Scenario Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Apply Disaster Scenario Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_get_performance_metrics(self):
+        """Test GET /api/performance endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/performance", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                performance = response.json()
+                required_fields = ['total_trains', 'on_time_trains', 'delayed_trains', 'rerouted_trains', 
+                                 'avg_delay', 'max_delay', 'throughput_improvement']
+                
+                if all(field in performance for field in required_fields):
+                    total_trains = performance['total_trains']
+                    on_time_trains = performance['on_time_trains']
+                    avg_delay = performance['avg_delay']
+                    
+                    if total_trains == 10:  # Expected number of trains
+                        self.log_test("Get Performance Metrics Endpoint", True, 
+                                    f"Performance: {total_trains} trains, {on_time_trains} on-time, {avg_delay}min avg delay")
+                        return performance
+                    else:
+                        self.log_test("Get Performance Metrics Endpoint", False, f"Expected 10 trains, got {total_trains}")
+                else:
+                    missing_fields = [f for f in required_fields if f not in performance]
+                    self.log_test("Get Performance Metrics Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_test("Get Performance Metrics Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Get Performance Metrics Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("🚂 AAGAMI RAIL Backend API Testing Suite")
