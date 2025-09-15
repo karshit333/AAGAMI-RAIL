@@ -88,6 +88,29 @@ function App() {
     }
   };
 
+  const loadSimulationStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/simulation/status`);
+      setSimulationStatus(response.data);
+    } catch (error) {
+      console.error("Error loading simulation status:", error);
+    }
+  };
+
+  const loadSystemAlerts = async () => {
+    try {
+      const response = await axios.get(`${API}/alerts`);
+      setSystemAlerts(response.data);
+    } catch (error) {
+      console.error("Error loading alerts:", error);
+    }
+  };
+
+  const handleSimulationUpdate = () => {
+    loadSimulationStatus();
+    loadSystemAlerts();
+  };
+
   const runOptimization = async () => {
     setIsOptimizing(true);
     try {
