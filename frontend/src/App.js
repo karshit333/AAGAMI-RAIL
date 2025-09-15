@@ -118,8 +118,12 @@ function App() {
       setOptimizedTrains(response.data.optimized_trains);
       setKpis(response.data.kpis);
       setExplanations(response.data.explanations);
+      setAlerts(response.data.alerts || []);
       setDisasterSummary("");
       setHasOptimized(true);
+      
+      // Update simulation status and system alerts
+      handleSimulationUpdate();
     } catch (error) {
       console.error("Error running optimization:", error);
     } finally {
@@ -137,12 +141,63 @@ function App() {
       setOptimizedTrains(response.data.optimized_trains);
       setKpis(response.data.kpis);
       setExplanations(response.data.explanations);
+      setAlerts(response.data.alerts || []);
       setDisasterSummary(response.data.disaster_summary);
       setHasOptimized(true);
+      
+      // Update simulation status and system alerts
+      handleSimulationUpdate();
     } catch (error) {
       console.error("Error running disaster scenario:", error);
     } finally {
       setIsOptimizing(false);
+    }
+  };
+
+  const applyCustomDisaster = async (disaster) => {
+    setIsOptimizing(true);
+    try {
+      const response = await axios.post(`${API}/disaster/custom`, disaster);
+      setOptimizedTrains(response.data.optimized_trains);
+      setKpis(response.data.kpis);
+      setExplanations(response.data.explanations);
+      setAlerts(response.data.alerts || []);
+      setDisasterSummary(response.data.disaster_summary);
+      setHasOptimized(true);
+      
+      handleSimulationUpdate();
+    } catch (error) {
+      console.error("Error applying custom disaster:", error);
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  const handleTrainClick = async (trainId) => {
+    try {
+      const response = await axios.get(`${API}/train/${trainId}`);
+      setSelectedTrain(response.data);
+      setShowTrainModal(true);
+    } catch (error) {
+      console.error("Error fetching train details:", error);
+    }
+  };
+
+  const handleDismissAlert = async (alertId) => {
+    try {
+      await axios.delete(`${API}/alerts/${alertId}`);
+      loadSystemAlerts();
+    } catch (error) {
+      console.error("Error dismissing alert:", error);
+    }
+  };
+
+  const handleAcknowledgeAlert = async (alertId) => {
+    try {
+      await axios.post(`${API}/alerts/${alertId}/acknowledge`);
+      loadSystemAlerts();
+    } catch (error) {
+      console.error("Error acknowledging alert:", error);
     }
   };
 
