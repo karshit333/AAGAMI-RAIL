@@ -40,7 +40,7 @@ class AagamiRailAPITester:
             
             if success:
                 data = response.json()
-                expected_message = "AAGAMI RAIL - AI Train Optimization API"
+                expected_message = "AAGAMI RAIL - AI Train Traffic Control API"
                 if data.get("message") == expected_message:
                     self.log_test("API Root Endpoint", True)
                     return True
