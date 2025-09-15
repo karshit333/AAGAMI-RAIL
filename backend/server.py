@@ -586,47 +586,6 @@ def calculate_advanced_kpis(original_trains: List[Train], optimized_trains: List
     }
 
 
-def generate_disaster_summary(disasters: List[Disaster], kpis: Dict[str, float], explanations: List[str]) -> str:
-    """Generate human-readable disaster impact summary"""
-    if not disasters:
-        return ""
-    
-    summary_parts = []
-    
-    # Count impacts
-    delayed_count = kpis.get("delayed_trains", 0)
-    rerouted_count = kpis.get("rerouted_trains", 0)
-    avg_delay = kpis.get("avg_delay_minutes", 0)
-    throughput_change = kpis.get("throughput_improvement", 0)
-    
-    # Disaster descriptions
-    disaster_descriptions = []
-    for disaster in disasters:
-        if disaster.type == DisasterType.FLOOD:
-            disaster_descriptions.append(f"flood on {disaster.affected_route}")
-        elif disaster.type == DisasterType.WEATHER:
-            disaster_descriptions.append(f"weather disruption reducing speeds by {int(disaster.speed_reduction*100)}%")
-        elif disaster.type == DisasterType.EQUIPMENT_FAILURE:
-            disaster_descriptions.append(f"equipment failure on {disaster.affected_route}")
-        elif disaster.type == DisasterType.VIP_TRAIN:
-            disaster_descriptions.append("emergency VIP train insertion")
-        elif disaster.type == DisasterType.BREAKDOWN:
-            disaster_descriptions.append(f"train breakdown on {disaster.affected_route}")
-        elif disaster.type == DisasterType.CUSTOM:
-            disaster_descriptions.append(f"custom disruption on {disaster.affected_route}")
-    
-    disaster_text = ", ".join(disaster_descriptions)
-    
-    summary = f"Disaster Impact: {disaster_text.title()} affected {delayed_count} trains with average delay of {avg_delay:.1f} minutes."
-    
-    if rerouted_count > 0:
-        summary += f" {rerouted_count} trains were rerouted to alternate paths."
-    
-    if throughput_change < 0:
-        summary += f" Network throughput decreased by {abs(throughput_change):.1f}%."
-    
-    return summary
-
 
 def generate_what_changed_summary(original_trains: List[Train], optimized_trains: List[Train], disasters: List[Disaster] = None) -> Dict[str, any]:
     """Generate comprehensive 'What Changed?' summary with AI analysis"""
