@@ -16,7 +16,9 @@ import {
   Zap,
   CloudRain,
   Settings,
-  Layers
+  Layers,
+  Brain,
+  TrendingUp
 } from "lucide-react";
 
 const AdvancedDisasterManager = ({ 
