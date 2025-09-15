@@ -588,7 +588,7 @@ def calculate_advanced_kpis(original_trains: List[Train], optimized_trains: List
 
 
 
-def generate_what_changed_summary(original_trains: List[Train], optimized_trains: List[Train], disasters: List[Disaster] = None) -> Dict[str, any]:
+def generate_what_changed_summary(original_trains: List[Train], optimized_trains: List[Train], disasters: List[Disaster] = None) -> Dict[str, Any]:
     """Generate comprehensive 'What Changed?' summary with AI analysis"""
     
     # Before/After comparison
