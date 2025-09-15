@@ -13,6 +13,7 @@ from enum import Enum
 import heapq
 from collections import defaultdict
 import copy
+import random
 
 
 ROOT_DIR = Path(__file__).parent
@@ -42,9 +43,34 @@ class DisasterType(str, Enum):
     WEATHER = "weather"
     VIP_TRAIN = "vip_train"
     BREAKDOWN = "breakdown"
+    CUSTOM = "custom"
+
+class AlertType(str, Enum):
+    CRITICAL_DELAY = "critical_delay"
+    ROUTE_BLOCKAGE = "route_blockage"
+    VIP_TRAIN = "vip_train"
+    SYSTEM_HEALTH = "system_health"
+    DISASTER = "disaster"
+
+class SimulationState(str, Enum):
+    PLAYING = "playing"
+    PAUSED = "paused"
+    STOPPED = "stopped"
 
 
-# Models
+# Enhanced Models
+class TrainDetails(BaseModel):
+    capacity: int = 400
+    current_load: int = 320
+    origin: str = "Delhi Junction"
+    destination: str = "Lucknow Junction"
+    stops: List[str] = []
+    fuel_consumption: float = 2.5  # liters per km
+    passenger_count: int = 320
+    coach_count: int = 12
+    engine_type: str = "WAP-7"
+    max_speed: int = 140  # km/h
+
 class Train(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     priority: Priority
@@ -57,6 +83,36 @@ class Train(BaseModel):
     rerouted: bool = False
     new_route: Optional[str] = None
     explanation: Optional[str] = None
+    details: TrainDetails = Field(default_factory=TrainDetails)
+    current_position: float = 0.0  # 0.0 to 1.0 along route
+    speed_kmh: int = 80
+    status: str = "on_time"  # on_time, delayed, critical, blocked
+
+class Alert(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    type: AlertType
+    title: str
+    message: str
+    severity: str = "medium"  # low, medium, high, critical
+    timestamp: str
+    train_id: Optional[str] = None
+    route_id: Optional[str] = None
+    acknowledged: bool = False
+
+class SimulationControl(BaseModel):
+    state: SimulationState = SimulationState.PAUSED
+    speed: float = 1.0  # 1x, 2x, 5x speed
+    current_time: str = "08:00"  # HH:MM
+    auto_advance: bool = True
+
+class CustomDisaster(BaseModel):
+    type: DisasterType = DisasterType.CUSTOM
+    affected_route: str
+    duration_minutes: int = 30
+    description: str
+    speed_reduction: float = 0.0
+    severity: str = "medium"
+    coordinates: Optional[List[Dict[str, float]]] = None  # For drawing on map
 
 class TrainCreate(BaseModel):
     priority: Priority
@@ -76,6 +132,7 @@ class Route(BaseModel):
     path: List[Dict[str, float]]  # path coordinates for animation
     blocked: bool = False
     speed_reduction: float = 0.0  # 0.0 to 1.0 (40% reduction = 0.4)
+    custom_blocked_sections: List[Dict[str, float]] = []  # Custom blocked areas
 
 class Disaster(BaseModel):
     type: DisasterType
@@ -84,10 +141,13 @@ class Disaster(BaseModel):
     description: str = ""
     speed_reduction: float = 0.0
     custom_description: Optional[str] = None
+    severity: str = "medium"
+    coordinates: Optional[List[Dict[str, float]]] = None
 
 class DisasterScenario(BaseModel):
     disasters: List[Disaster]
     description: str
+    multiple: bool = False  # Can handle multiple simultaneous disasters
 
 class OptimizationResult(BaseModel):
     original_trains: List[Train]
@@ -95,6 +155,7 @@ class OptimizationResult(BaseModel):
     kpis: Dict[str, float]
     explanations: List[str]
     disaster_summary: Optional[str] = None
+    alerts: List[Alert] = []
 
 class PerformanceMetrics(BaseModel):
     total_trains: int
@@ -106,14 +167,49 @@ class PerformanceMetrics(BaseModel):
     throughput_improvement: float
     route_throughput: Dict[str, int]
 
+class SystemStatus(BaseModel):
+    simulation: SimulationControl
+    active_alerts: List[Alert]
+    system_health: str = "healthy"  # healthy, warning, critical
+    total_trains: int
+    active_disasters: int
 
-# Sample data initialization
+
+# Global simulation state
+SIMULATION_STATE = SimulationControl()
+ACTIVE_ALERTS = []
+ACTIVE_DISASTERS = []
+
+# Sample data initialization with enhanced details
+def generate_train_details(route: str) -> TrainDetails:
+    """Generate realistic train details based on route"""
+    station_map = {
+        "A": "Delhi Junction", "B": "Ghaziabad", "C": "Moradabad", 
+        "D": "Bareilly", "E": "Lucknow Junction"
+    }
+    
+    origin_station = route.split('-')[0]
+    dest_station = route.split('-')[-1]
+    
+    return TrainDetails(
+        capacity=random.randint(300, 500),
+        current_load=random.randint(200, 450),
+        origin=station_map.get(origin_station, "Delhi Junction"),
+        destination=station_map.get(dest_station, "Lucknow Junction"),
+        stops=[station_map.get(s, f"Station {s}") for s in route.split('-')],
+        fuel_consumption=round(random.uniform(2.0, 3.5), 1),
+        passenger_count=random.randint(200, 450),
+        coach_count=random.randint(8, 16),
+        engine_type=random.choice(["WAP-7", "WAP-5", "WAG-9", "WAG-7"]),
+        max_speed=random.randint(110, 160)
+    )
+
 SAMPLE_STATIONS = [
     Station(id="A", name="Delhi Junction", x=100, y=200),
     Station(id="B", name="Ghaziabad", x=300, y=200),
     Station(id="C", name="Moradabad", x=500, y=200),
     Station(id="D", name="Bareilly", x=700, y=200),
-    Station(id="E", name="Lucknow", x=500, y=100),
+    Station(id="E", name="Lucknow Junction", x=500, y=100),
 ]
 
 SAMPLE_ROUTES = [
@@ -127,40 +223,49 @@ SAMPLE_ROUTES = [
     Route(id="A-E", stations=["A", "E"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 100}, {"x": 500, "y": 100}]),
 ]
 
+# Generate sample trains with enhanced details
 SAMPLE_TRAINS = [
-    Train(priority=Priority.HIGH, planned_arrival="08:00", planned_departure="08:15", route="A-B"),
-    Train(priority=Priority.HIGH, planned_arrival="08:10", planned_departure="08:25", route="A-B"),
-    Train(priority=Priority.MEDIUM, planned_arrival="08:05", planned_departure="08:20", route="B-C"),
-    Train(priority=Priority.MEDIUM, planned_arrival="08:30", planned_departure="08:45", route="B-C"),
-    Train(priority=Priority.LOW, planned_arrival="08:15", planned_departure="08:30", route="C-D"),
-    Train(priority=Priority.HIGH, planned_arrival="08:20", planned_departure="08:35", route="D-E"),
-    Train(priority=Priority.MEDIUM, planned_arrival="08:25", planned_departure="08:40", route="B-E"),
-    Train(priority=Priority.LOW, planned_arrival="08:35", planned_departure="08:50", route="B-E"),
-    Train(priority=Priority.HIGH, planned_arrival="08:40", planned_departure="08:55", route="C-D"),
-    Train(priority=Priority.LOW, planned_arrival="08:45", planned_departure="09:00", route="A-B"),
+    Train(priority=Priority.HIGH, planned_arrival="08:00", planned_departure="08:15", route="A-B", details=generate_train_details("A-B")),
+    Train(priority=Priority.HIGH, planned_arrival="08:10", planned_departure="08:25", route="A-B", details=generate_train_details("A-B")),
+    Train(priority=Priority.MEDIUM, planned_arrival="08:05", planned_departure="08:20", route="B-C", details=generate_train_details("B-C")),
+    Train(priority=Priority.MEDIUM, planned_arrival="08:30", planned_departure="08:45", route="B-C", details=generate_train_details("B-C")),
+    Train(priority=Priority.LOW, planned_arrival="08:15", planned_departure="08:30", route="C-D", details=generate_train_details("C-D")),
+    Train(priority=Priority.HIGH, planned_arrival="08:20", planned_departure="08:35", route="D-E", details=generate_train_details("D-E")),
+    Train(priority=Priority.MEDIUM, planned_arrival="08:25", planned_departure="08:40", route="B-E", details=generate_train_details("B-E")),
+    Train(priority=Priority.LOW, planned_arrival="08:35", planned_departure="08:50", route="B-E", details=generate_train_details("B-E")),
+    Train(priority=Priority.HIGH, planned_arrival="08:40", planned_departure="08:55", route="C-D", details=generate_train_details("C-D")),
+    Train(priority=Priority.LOW, planned_arrival="08:45", planned_departure="09:00", route="A-B", details=generate_train_details("A-B")),
 ]
 
-# Predefined disaster scenarios
+# Enhanced disaster scenarios
 DISASTER_SCENARIOS = {
     "flood_ab": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.FLOOD, affected_route="A-B", duration_minutes=120, description="Heavy rainfall floods A-B section")],
+        disasters=[Disaster(type=DisasterType.FLOOD, affected_route="A-B", duration_minutes=120, description="Heavy rainfall floods A-B section", severity="high")],
         description="Flood on A-B section blocks main route for 2 hours"
     ),
     "equipment_failure": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.EQUIPMENT_FAILURE, affected_route="B-C", duration_minutes=45, description="Signal failure at Ghaziabad")],
+        disasters=[Disaster(type=DisasterType.EQUIPMENT_FAILURE, affected_route="B-C", duration_minutes=45, description="Signal failure at Ghaziabad", severity="medium")],
         description="Equipment failure causes signal outage on B-C route"
     ),
     "weather_slow": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.WEATHER, affected_route="all", speed_reduction=0.4, description="Dense fog reduces visibility")],
+        disasters=[Disaster(type=DisasterType.WEATHER, affected_route="all", speed_reduction=0.4, description="Dense fog reduces visibility", severity="medium")],
         description="Weather disruption reduces train speeds by 40% across network"
     ),
     "vip_train": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.VIP_TRAIN, description="Emergency VIP train requires immediate priority")],
+        disasters=[Disaster(type=DisasterType.VIP_TRAIN, description="Emergency VIP train requires immediate priority", severity="high")],
         description="Emergency VIP train insertion requires priority clearance"
     ),
     "breakdown_ce": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.BREAKDOWN, affected_route="C-D", duration_minutes=15, description="Freight train breakdown blocks C-D")],
+        disasters=[Disaster(type=DisasterType.BREAKDOWN, affected_route="C-D", duration_minutes=15, description="Freight train breakdown blocks C-D", severity="low")],
         description="Train breakdown blocks C-D section for 15 minutes"
+    ),
+    "multiple_disasters": DisasterScenario(
+        disasters=[
+            Disaster(type=DisasterType.FLOOD, affected_route="A-B", duration_minutes=90, description="Flood on A-B", severity="high"),
+            Disaster(type=DisasterType.WEATHER, affected_route="all", speed_reduction=0.3, description="Rain reduces speeds", severity="medium")
+        ],
+        description="Multiple disasters: Flood on A-B + Weather slowdown across network",
+        multiple=True
     )
 }
 
@@ -177,6 +282,67 @@ def minutes_to_time(minutes: int) -> str:
     hours = minutes // 60
     mins = minutes % 60
     return f"{hours:02d}:{mins:02d}"
+
+
+def advance_simulation_time(minutes: int = 1):
+    """Advance simulation time"""
+    current_minutes = time_to_minutes(SIMULATION_STATE.current_time)
+    new_minutes = current_minutes + minutes
+    SIMULATION_STATE.current_time = minutes_to_time(new_minutes % (24 * 60))
+
+
+def generate_alert(alert_type: AlertType, title: str, message: str, severity: str = "medium", 
+                  train_id: str = None, route_id: str = None) -> Alert:
+    """Generate a new alert"""
+    return Alert(
+        type=alert_type,
+        title=title,
+        message=message,
+        severity=severity,
+        timestamp=datetime.now().strftime("%H:%M:%S"),
+        train_id=train_id,
+        route_id=route_id
+    )
+
+
+def check_and_generate_alerts(trains: List[Train]) -> List[Alert]:
+    """Check system state and generate appropriate alerts"""
+    alerts = []
+    
+    for train in trains:
+        # Critical delay alert
+        if train.delay_minutes > 15:
+            alerts.append(generate_alert(
+                AlertType.CRITICAL_DELAY,
+                f"Critical Delay - Train {train.id[:6]}",
+                f"Train {train.id[:6]} is delayed by {train.delay_minutes} minutes on route {train.route}",
+                "critical",
+                train_id=train.id,
+                route_id=train.route
+            ))
+        
+        # VIP train alert
+        if train.priority == Priority.HIGH and train.delay_minutes > 5:
+            alerts.append(generate_alert(
+                AlertType.VIP_TRAIN,
+                f"VIP Train Delayed - {train.id[:6]}",
+                f"High priority train {train.id[:6]} experiencing {train.delay_minutes} min delay",
+                "high",
+                train_id=train.id
+            ))
+    
+    # Route blockage alerts
+    for disaster in ACTIVE_DISASTERS:
+        if disaster.type in [DisasterType.FLOOD, DisasterType.BREAKDOWN, DisasterType.EQUIPMENT_FAILURE]:
+            alerts.append(generate_alert(
+                AlertType.ROUTE_BLOCKAGE,
+                f"Route Blocked - {disaster.affected_route}",
+                f"{disaster.description} - Route {disaster.affected_route} unavailable",
+                disaster.severity,
+                route_id=disaster.affected_route
+            ))
+    
+    return alerts
 
 
 def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> List[List[str]]:
@@ -241,6 +407,17 @@ def apply_disasters(routes: List[Route], disasters: List[Disaster]) -> List[Rout
             for route in affected_routes:
                 if disaster.affected_route == "all" or route.id == disaster.affected_route:
                     route.speed_reduction = disaster.speed_reduction
+                    
+        elif disaster.type == DisasterType.CUSTOM:
+            # Custom disaster handling
+            for route in affected_routes:
+                if route.id == disaster.affected_route:
+                    if disaster.speed_reduction > 0:
+                        route.speed_reduction = disaster.speed_reduction
+                    else:
+                        route.blocked = True
+                    if disaster.coordinates:
+                        route.custom_blocked_sections = disaster.coordinates
     
     return affected_routes
 
@@ -254,6 +431,8 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
     current_routes = SAMPLE_ROUTES
     if disasters:
         current_routes = apply_disasters(SAMPLE_ROUTES, disasters)
+        ACTIVE_DISASTERS.clear()
+        ACTIVE_DISASTERS.extend(disasters)
     
     # Priority weights for sorting
     priority_weights = {Priority.HIGH: 3, Priority.MEDIUM: 2, Priority.LOW: 1}
@@ -265,7 +444,8 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
             priority=Priority.HIGH,
             planned_arrival="08:12",
             planned_departure="08:27",
-            route="A-B"  # VIP train takes priority route
+            route="A-B",  # VIP train takes priority route
+            details=generate_train_details("A-B")
         )
         trains = [vip_train] + trains
         explanations.append("Emergency VIP train inserted with highest priority on A-B route")
@@ -308,12 +488,14 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                         new_train.rerouted = True
                         new_train.new_route = new_route
                         new_train.delay_minutes += 10  # Rerouting adds delay
+                        new_train.status = "rerouted"
                         new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + 10)
                         new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + 10)
                         explanations.append(f"Train {train.id[:6]} rerouted via {' → '.join(path)} due to {route_id} blockage (+10 min delay)")
                 else:
                     # No alternate route - significant delay
                     new_train.delay_minutes += 60
+                    new_train.status = "critical"
                     new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + 60)
                     new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + 60)
                     explanations.append(f"Train {train.id[:6]} delayed 60 min - no alternate route available for blocked {route_id}")
@@ -322,6 +504,7 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
             elif speed_reduction > 0:
                 delay_from_speed = int(15 * speed_reduction)  # Base delay proportional to speed reduction
                 new_train.delay_minutes += delay_from_speed
+                new_train.status = "delayed" if delay_from_speed < 15 else "critical"
                 new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + delay_from_speed)
                 new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + delay_from_speed)
                 explanations.append(f"Train {train.id[:6]} delayed {delay_from_speed} min due to {int(speed_reduction*100)}% speed reduction")
@@ -340,6 +523,7 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                             # Delay current train
                             delay = scheduled_dep - current_arr + 5
                             new_train.delay_minutes += delay
+                            new_train.status = "delayed" if delay < 15 else "critical"
                             new_train.optimized_arrival = minutes_to_time(current_arr + delay)
                             new_train.optimized_departure = minutes_to_time(current_dep + delay)
                             explanations.append(f"Train {train.id[:6]} delayed {delay} min to give priority to {scheduled_train.priority.lower()} priority train {scheduled_train.id[:6]}")
@@ -347,9 +531,14 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                             # Delay scheduled train
                             delay = current_dep - scheduled_arr + 5
                             scheduled_train.delay_minutes += delay
+                            scheduled_train.status = "delayed" if delay < 15 else "critical"
                             scheduled_train.optimized_arrival = minutes_to_time(scheduled_arr + delay)
                             scheduled_train.optimized_departure = minutes_to_time(scheduled_dep + delay)
                             explanations.append(f"Train {scheduled_train.id[:6]} delayed {delay} min to give priority to {new_train.priority.lower()} priority train {train.id[:6]}")
+            
+            # Update train status
+            if new_train.delay_minutes == 0:
+                new_train.status = "on_time"
             
             scheduled_trains.append(new_train)
         
@@ -423,6 +612,8 @@ def generate_disaster_summary(disasters: List[Disaster], kpis: Dict[str, float],
             disaster_descriptions.append("emergency VIP train insertion")
         elif disaster.type == DisasterType.BREAKDOWN:
             disaster_descriptions.append(f"train breakdown on {disaster.affected_route}")
+        elif disaster.type == DisasterType.CUSTOM:
+            disaster_descriptions.append(f"custom disruption on {disaster.affected_route}")
     
     disaster_text = ", ".join(disaster_descriptions)
     
@@ -437,6 +628,36 @@ def generate_disaster_summary(disasters: List[Disaster], kpis: Dict[str, float],
     return summary
 
 
+def find_next_conflict_time(trains: List[Train]) -> Optional[str]:
+    """Find the next conflict time in the schedule"""
+    current_time_minutes = time_to_minutes(SIMULATION_STATE.current_time)
+    
+    conflicts = []
+    route_trains = defaultdict(list)
+    
+    for train in trains:
+        route_trains[train.route].append(train)
+    
+    for route, train_list in route_trains.items():
+        for i, train1 in enumerate(train_list):
+            for train2 in train_list[i+1:]:
+                train1_arr = time_to_minutes(train1.optimized_arrival or train1.planned_arrival)
+                train1_dep = time_to_minutes(train1.optimized_departure or train1.planned_departure)
+                train2_arr = time_to_minutes(train2.optimized_arrival or train2.planned_arrival)
+                train2_dep = time_to_minutes(train2.optimized_departure or train2.planned_departure)
+                
+                if not (train1_dep <= train2_arr or train2_dep <= train1_arr):
+                    conflict_time = max(train1_arr, train2_arr)
+                    if conflict_time > current_time_minutes:
+                        conflicts.append(conflict_time)
+    
+    if conflicts:
+        next_conflict = min(conflicts)
+        return minutes_to_time(next_conflict)
+    
+    return None
+
+
 # API Routes
 @api_router.get("/")
 async def root():
@@ -449,10 +670,20 @@ async def get_trains():
     return SAMPLE_TRAINS
 
 
+@api_router.get("/train/{train_id}", response_model=Train)
+async def get_train_details(train_id: str):
+    """Get detailed information about a specific train"""
+    for train in SAMPLE_TRAINS:
+        if train.id.startswith(train_id):
+            return train
+    
+    raise HTTPException(status_code=404, detail="Train not found")
+
+
 @api_router.post("/trains", response_model=Train)
 async def create_train(train: TrainCreate):
     """Create a new train"""
-    new_train = Train(**train.dict())
+    new_train = Train(**train.dict(), details=generate_train_details(train.route))
     return new_train
 
 
@@ -482,15 +713,22 @@ async def optimize_trains(trains: List[Train] = None):
         train.rerouted = False
         train.new_route = None
         train.explanation = None
+        train.status = "on_time"
     
     optimized_trains, explanations = optimize_with_disasters(trains)
     kpis = calculate_advanced_kpis(trains, optimized_trains)
+    alerts = check_and_generate_alerts(optimized_trains)
+    
+    # Update global alerts
+    ACTIVE_ALERTS.clear()
+    ACTIVE_ALERTS.extend(alerts)
     
     return OptimizationResult(
         original_trains=trains,
         optimized_trains=optimized_trains,
         kpis=kpis,
-        explanations=explanations
+        explanations=explanations,
+        alerts=alerts
     )
 
 
@@ -507,24 +745,116 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
         train.rerouted = False
         train.new_route = None
         train.explanation = None
+        train.status = "on_time"
     
     optimized_trains, explanations = optimize_with_disasters(trains, scenario.disasters)
     kpis = calculate_advanced_kpis(trains, optimized_trains, scenario.disasters)
     disaster_summary = generate_disaster_summary(scenario.disasters, kpis, explanations)
+    alerts = check_and_generate_alerts(optimized_trains)
+    
+    # Update global alerts
+    ACTIVE_ALERTS.clear()
+    ACTIVE_ALERTS.extend(alerts)
     
     return OptimizationResult(
         original_trains=trains,
         optimized_trains=optimized_trains,
         kpis=kpis,
         explanations=explanations,
-        disaster_summary=disaster_summary
+        disaster_summary=disaster_summary,
+        alerts=alerts
     )
+
+
+@api_router.post("/disaster/custom", response_model=OptimizationResult)
+async def apply_custom_disaster(disaster: CustomDisaster):
+    """Apply custom disaster scenario"""
+    scenario = DisasterScenario(
+        disasters=[Disaster(**disaster.dict())],
+        description=f"Custom disaster: {disaster.description}"
+    )
+    
+    return await apply_disaster_scenario(scenario)
 
 
 @api_router.get("/disaster-scenarios")
 async def get_disaster_scenarios():
     """Get predefined disaster scenarios"""
     return DISASTER_SCENARIOS
+
+
+@api_router.get("/simulation/status", response_model=SystemStatus)
+async def get_simulation_status():
+    """Get current simulation status"""
+    return SystemStatus(
+        simulation=SIMULATION_STATE,
+        active_alerts=ACTIVE_ALERTS[-10:],  # Last 10 alerts
+        system_health="healthy" if len(ACTIVE_ALERTS) < 5 else "warning" if len(ACTIVE_ALERTS) < 10 else "critical",
+        total_trains=len(SAMPLE_TRAINS),
+        active_disasters=len(ACTIVE_DISASTERS)
+    )
+
+
+@api_router.post("/simulation/control")
+async def control_simulation(control: SimulationControl):
+    """Control simulation state"""
+    global SIMULATION_STATE
+    SIMULATION_STATE = control
+    
+    # Advance time if playing
+    if control.state == SimulationState.PLAYING:
+        advance_simulation_time(int(control.speed))
+    
+    return {"status": "updated", "simulation": SIMULATION_STATE}
+
+
+@api_router.get("/simulation/next-conflict")
+async def get_next_conflict():
+    """Get time of next scheduling conflict"""
+    next_conflict_time = find_next_conflict_time(SAMPLE_TRAINS)
+    
+    return {
+        "next_conflict_time": next_conflict_time,
+        "current_time": SIMULATION_STATE.current_time,
+        "can_jump": next_conflict_time is not None
+    }
+
+
+@api_router.post("/simulation/jump-to-conflict")
+async def jump_to_next_conflict():
+    """Jump simulation time to next conflict"""
+    next_conflict_time = find_next_conflict_time(SAMPLE_TRAINS)
+    
+    if next_conflict_time:
+        SIMULATION_STATE.current_time = next_conflict_time
+        return {"status": "jumped", "new_time": next_conflict_time}
+    
+    return {"status": "no_conflicts", "current_time": SIMULATION_STATE.current_time}
+
+
+@api_router.get("/alerts", response_model=List[Alert])
+async def get_active_alerts():
+    """Get active system alerts"""
+    return ACTIVE_ALERTS
+
+
+@api_router.post("/alerts/{alert_id}/acknowledge")
+async def acknowledge_alert(alert_id: str):
+    """Acknowledge an alert"""
+    for alert in ACTIVE_ALERTS:
+        if alert.id == alert_id:
+            alert.acknowledged = True
+            return {"status": "acknowledged", "alert_id": alert_id}
+    
+    raise HTTPException(status_code=404, detail="Alert not found")
+
+
+@api_router.delete("/alerts/{alert_id}")
+async def dismiss_alert(alert_id: str):
+    """Dismiss an alert"""
+    global ACTIVE_ALERTS
+    ACTIVE_ALERTS = [alert for alert in ACTIVE_ALERTS if alert.id != alert_id]
+    return {"status": "dismissed", "alert_id": alert_id}
 
 
 @api_router.get("/performance", response_model=PerformanceMetrics)
@@ -577,7 +907,8 @@ async def get_conflicts():
                         "train1": f"{train1.id[:6]} ({train1.priority})",
                         "train2": f"{train2.id[:6]} ({train2.priority})",
                         "route": route,
-                        "overlap_minutes": min(train1_dep, train2_dep) - max(train1_arr, train2_arr)
+                        "overlap_minutes": min(train1_dep, train2_dep) - max(train1_arr, train2_arr),
+                        "conflict_time": minutes_to_time(max(train1_arr, train2_arr))
                     })
                     conflict_count += 1
     
