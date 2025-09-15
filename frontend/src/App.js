@@ -52,6 +52,7 @@ function App() {
   const [showTrainModal, setShowTrainModal] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [systemAlerts, setSystemAlerts] = useState([]);
+  const [whatChanged, setWhatChanged] = useState(null);
 
   useEffect(() => {
     loadInitialData();
