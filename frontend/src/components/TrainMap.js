@@ -205,7 +205,7 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
           else if (trainColor.includes('gray')) fillColor = '#6b7280';
           
           return (
-            <g key={train.id}>
+            <g key={train.id} onClick={() => onTrainClick && onTrainClick(train.id)} className="cursor-pointer">
               {/* Train dot with priority color */}
               <circle
                 cx={train.position.x}
@@ -215,7 +215,7 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
                 stroke="#ffffff"
                 strokeWidth="2"
                 opacity="0.9"
-                className="drop-shadow-sm"
+                className="drop-shadow-sm hover:r-12 transition-all"
               >
                 <animate
                   attributeName="r"
