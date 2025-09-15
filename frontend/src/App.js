@@ -47,7 +47,6 @@ function App() {
   const [selectedDisaster, setSelectedDisaster] = useState("");
   
   // New state for advanced features
-  const [simulationStatus, setSimulationStatus] = useState(null);
   const [selectedTrain, setSelectedTrain] = useState(null);
   const [showTrainModal, setShowTrainModal] = useState(false);
   const [alerts, setAlerts] = useState([]);
