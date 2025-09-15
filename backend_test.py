@@ -278,7 +278,7 @@ class AagamiRailAPITester:
                 self.log_test("Apply Disaster Scenario Endpoint", False, "No scenarios available for testing")
                 return None
             
-            # Test with flood scenario
+            # Test with flood scenario - send the scenario object directly
             flood_scenario = scenarios.get('flood_ab')
             if not flood_scenario:
                 self.log_test("Apply Disaster Scenario Endpoint", False, "Flood scenario not found")
@@ -286,7 +286,7 @@ class AagamiRailAPITester:
             
             response = requests.post(
                 f"{self.api_url}/disaster", 
-                json=flood_scenario,
+                json=flood_scenario,  # Send the scenario object directly
                 headers={'Content-Type': 'application/json'},
                 timeout=15
             )
@@ -315,7 +315,12 @@ class AagamiRailAPITester:
                     missing_fields = [f for f in required_fields if f not in disaster_result]
                     self.log_test("Apply Disaster Scenario Endpoint", False, f"Missing fields: {missing_fields}")
             else:
-                self.log_test("Apply Disaster Scenario Endpoint", False, f"Status code: {response.status_code}")
+                # Get error details for debugging
+                try:
+                    error_detail = response.json()
+                    self.log_test("Apply Disaster Scenario Endpoint", False, f"Status code: {response.status_code}, Error: {error_detail}")
+                except:
+                    self.log_test("Apply Disaster Scenario Endpoint", False, f"Status code: {response.status_code}")
                 
         except Exception as e:
             self.log_test("Apply Disaster Scenario Endpoint", False, f"Exception: {str(e)}")
