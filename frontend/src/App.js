@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from "./components/ui/alert";
 import { Separator } from "./components/ui/separator";
 import TrainMap from "./components/TrainMap";
 import PerformanceCharts from "./components/PerformanceCharts";
-import SimulationControls from "./components/SimulationControls";
 import TrainDetailsModal from "./components/TrainDetailsModal";
 import AlertSystem from "./components/AlertSystem";
 import AdvancedDisasterManager from "./components/AdvancedDisasterManager";
