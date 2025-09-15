@@ -347,6 +347,21 @@ function App() {
         <main className="p-6">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
+              {/* Simulation Controls */}
+              <SimulationControls 
+                onSimulationUpdate={handleSimulationUpdate}
+                simulationStatus={simulationStatus}
+              />
+
+              {/* Alert System */}
+              {systemAlerts.length > 0 && (
+                <AlertSystem 
+                  alerts={systemAlerts}
+                  onDismissAlert={handleDismissAlert}
+                  onAcknowledgeAlert={handleAcknowledgeAlert}
+                />
+              )}
+
               {/* KPI Cards */}
               {hasOptimized && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
