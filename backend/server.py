@@ -377,6 +377,13 @@ def calculate_advanced_kpis(original_trains: List[Train], optimized_trains: List
     current_throughput = len([train for train in optimized_trains if train.delay_minutes < 30])  # trains with acceptable delay
     throughput_improvement = ((current_throughput - original_throughput) / original_throughput * 100) if original_throughput > 0 else 0
     
+    # Route throughput calculation
+    route_throughput = {}
+    for train in optimized_trains:
+        route = train.rerouted and train.new_route or train.route
+        if train.delay_minutes < 30:  # Consider successful if delay < 30 min
+            route_throughput[route] = route_throughput.get(route, 0) + 1
+    
     return {
         "total_trains": float(total_trains),
         "on_time_trains": float(on_time_trains),
