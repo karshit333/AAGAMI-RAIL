@@ -361,17 +361,23 @@ const AdvancedDisasterManager = ({
 
           {/* Description */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Disruption Description</label>
+            <label className="text-sm font-medium mb-2 block">
+              {customForm.type === 'emergency_train' ? 'Emergency Details' : 'Disruption Description'}
+            </label>
             <Textarea
               value={customForm.description}
               onChange={(e) => setCustomForm({...customForm, description: e.target.value})}
-              placeholder="Describe the specific operational disruption..."
+              placeholder={
+                customForm.type === 'emergency_train' 
+                  ? "Describe the emergency situation requiring immediate train dispatch..."
+                  : "Describe the specific operational disruption..."
+              }
               className="min-h-[80px]"
             />
           </div>
 
           {/* AI Impact Prediction */}
-          {customForm.affected_route && customForm.description && (
+          {((customForm.affected_route && customForm.description) || customForm.type === 'emergency_train') && (
             <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="h-4 w-4 text-blue-600" />
@@ -379,6 +385,19 @@ const AdvancedDisasterManager = ({
               </div>
               {(() => {
                 const prediction = predictDisasterImpact(customForm);
+                if (customForm.type === 'emergency_train') {
+                  return (
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-600">
+                        <strong>Emergency Response Analysis:</strong> All trains will be cleared from selected route. 
+                        Expected network delays: ~{prediction.predicted_avg_delay} minutes per affected train.
+                      </div>
+                      <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                        AI will automatically determine optimal clearance strategy and minimize cascading delays across network.
+                      </div>
+                    </div>
+                  );
+                }
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
                     <div>Expected Delay: ~{prediction.predicted_avg_delay} min</div>
@@ -393,11 +412,12 @@ const AdvancedDisasterManager = ({
           {/* Create Custom Disaster Button */}
           <Button 
             onClick={addCustomDisaster}
-            disabled={!customForm.affected_route || !customForm.description}
+            disabled={!customForm.description || (customForm.type !== 'emergency_train' && !customForm.affected_route)}
             className="w-full flex items-center gap-2"
+            variant={customForm.type === 'emergency_train' ? 'destructive' : 'default'}
           >
             <Plus className="h-4 w-4" />
-            Create Custom Disruption Scenario
+            {customForm.type === 'emergency_train' ? 'Deploy Emergency Train' : 'Create Disruption Scenario'}
           </Button>
         </CardContent>
       </Card>
