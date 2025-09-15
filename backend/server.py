@@ -41,7 +41,7 @@ class DisasterType(str, Enum):
     FLOOD = "flood"
     EQUIPMENT_FAILURE = "equipment_failure"
     WEATHER = "weather"
-    VIP_TRAIN = "vip_train"
+    EMERGENCY_TRAIN = "emergency_train"
     BREAKDOWN = "breakdown"
     CUSTOM = "custom"
 
