@@ -46,6 +46,13 @@ function App() {
   const [explanations, setExplanations] = useState([]);
   const [disasterSummary, setDisasterSummary] = useState("");
   const [selectedDisaster, setSelectedDisaster] = useState("");
+  
+  // New state for advanced features
+  const [simulationStatus, setSimulationStatus] = useState(null);
+  const [selectedTrain, setSelectedTrain] = useState(null);
+  const [showTrainModal, setShowTrainModal] = useState(false);
+  const [alerts, setAlerts] = useState([]);
+  const [systemAlerts, setSystemAlerts] = useState([]);
 
   useEffect(() => {
     loadInitialData();
