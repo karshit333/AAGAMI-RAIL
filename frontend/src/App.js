@@ -556,73 +556,12 @@ function App() {
           )}
 
           {activeTab === "disaster" && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Disaster Scenario Management</CardTitle>
-                  <CardDescription>Simulate disruptions and test AI response capabilities</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Predefined Scenarios</h3>
-                      <div className="space-y-3">
-                        <Select value={selectedDisaster} onValueChange={setSelectedDisaster}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select disaster scenario" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="flood_ab">Flood on A-B Route</SelectItem>
-                            <SelectItem value="equipment_failure">Equipment Failure</SelectItem>
-                            <SelectItem value="weather_slow">Weather Disruption</SelectItem>
-                            <SelectItem value="vip_train">Emergency VIP Train</SelectItem>
-                            <SelectItem value="breakdown_ce">Train Breakdown</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        
-                        <Button 
-                          onClick={runDisasterScenario}
-                          disabled={!selectedDisaster || isOptimizing}
-                          className="w-full"
-                          variant="destructive"
-                        >
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          {isOptimizing ? "Simulating..." : "Apply Disaster Scenario"}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Scenario Details</h3>
-                      {selectedDisaster && disasterScenarios[selectedDisaster] && (
-                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <p className="text-sm text-yellow-800">
-                            {disasterScenarios[selectedDisaster].description}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Disaster Scenarios Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(disasterScenarios).map(([key, scenario]) => (
-                  <Card key={key} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedDisaster(key)}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                        {scenario.description.split(' ').slice(0, 3).join(' ')}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-gray-600">{scenario.description}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+            <AdvancedDisasterManager
+              routes={routes}
+              onApplyDisaster={runDisasterScenario}
+              onApplyCustomDisaster={applyCustomDisaster}
+              isLoading={isOptimizing}
+            />
           )}
 
           {activeTab === "performance" && (
