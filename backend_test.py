@@ -367,6 +367,13 @@ class AagamiRailAPITester:
         routes = self.test_get_routes()
         conflicts = self.test_get_conflicts()
         
+        # Test disaster scenarios
+        scenarios = self.test_get_disaster_scenarios()
+        disaster_result = self.test_apply_disaster_scenario(scenarios)
+        
+        # Test performance metrics
+        performance = self.test_get_performance_metrics()
+        
         # Test optimization with sample data
         optimization_result = self.test_optimize_trains(trains)
         
