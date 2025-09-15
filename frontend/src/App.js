@@ -107,6 +107,7 @@ function App() {
       setKpis(response.data.kpis);
       setExplanations(response.data.explanations);
       setAlerts(response.data.alerts || []);
+      setWhatChanged(response.data.what_changed);
       setDisasterSummary("");
       setHasOptimized(true);
       
@@ -130,6 +131,7 @@ function App() {
       setKpis(response.data.kpis);
       setExplanations(response.data.explanations);
       setAlerts(response.data.alerts || []);
+      setWhatChanged(response.data.what_changed);
       setDisasterSummary(response.data.disaster_summary);
       setHasOptimized(true);
       
@@ -150,6 +152,7 @@ function App() {
       setKpis(response.data.kpis);
       setExplanations(response.data.explanations);
       setAlerts(response.data.alerts || []);
+      setWhatChanged(response.data.what_changed);
       setDisasterSummary(response.data.disaster_summary);
       setHasOptimized(true);
       
