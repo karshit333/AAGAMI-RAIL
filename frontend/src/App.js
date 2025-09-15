@@ -56,7 +56,19 @@ function App() {
 
   useEffect(() => {
     loadInitialData();
-  }, []);
+    loadSimulationStatus();
+    loadSystemAlerts();
+    
+    // Set up polling for real-time updates
+    const interval = setInterval(() => {
+      if (activeTab === "dashboard") {
+        loadSimulationStatus();
+        loadSystemAlerts();
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [activeTab]);
 
   const loadInitialData = async () => {
     try {
