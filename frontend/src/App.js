@@ -84,15 +84,6 @@ function App() {
     }
   };
 
-  const loadSimulationStatus = async () => {
-    try {
-      const response = await axios.get(`${API}/simulation/status`);
-      setSimulationStatus(response.data);
-    } catch (error) {
-      console.error("Error loading simulation status:", error);
-    }
-  };
-
   const loadSystemAlerts = async () => {
     try {
       const response = await axios.get(`${API}/alerts`);
@@ -103,7 +94,6 @@ function App() {
   };
 
   const handleSimulationUpdate = () => {
-    loadSimulationStatus();
     loadSystemAlerts();
   };
 
