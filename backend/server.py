@@ -156,7 +156,7 @@ class OptimizationResult(BaseModel):
     explanations: List[str]
     disaster_summary: Optional[str] = None
     alerts: List[Alert] = []
-    what_changed: Optional[Dict[str, any]] = None
+    what_changed: Optional[Dict[str, Any]] = None
 
 class PerformanceMetrics(BaseModel):
     total_trains: int
