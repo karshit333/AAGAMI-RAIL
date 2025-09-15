@@ -495,10 +495,9 @@ async def optimize_trains(trains: List[Train] = None):
 
 
 @api_router.post("/disaster", response_model=OptimizationResult)
-async def apply_disaster_scenario(scenario: DisasterScenario, trains: List[Train] = None):
+async def apply_disaster_scenario(scenario: DisasterScenario):
     """Apply disaster scenario and re-optimize"""
-    if trains is None:
-        trains = SAMPLE_TRAINS
+    trains = SAMPLE_TRAINS
         
     # Reset trains
     for train in trains:
