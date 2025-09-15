@@ -393,7 +393,8 @@ def calculate_advanced_kpis(original_trains: List[Train], optimized_trains: List
         "max_delay_minutes": float(max_delay),
         "total_delay_minutes": float(total_delay),
         "throughput_improvement": round(throughput_improvement, 2),
-        "disaster_impact": float(len(disasters) if disasters else 0)
+        "disaster_impact": float(len(disasters) if disasters else 0),
+        "route_throughput": route_throughput
     }
 
 
