@@ -681,6 +681,13 @@ function App() {
           </div>
         </footer>
       </div>
+
+      {/* Train Details Modal */}
+      <TrainDetailsModal
+        train={selectedTrain}
+        isOpen={showTrainModal}
+        onClose={() => setShowTrainModal(false)}
+      />
     </div>
   );
 }
