@@ -969,7 +969,7 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
     if what_changed["summary_stats"]["rerouted_trains"] > 0:
         disaster_summary += f" {what_changed['summary_stats']['rerouted_trains']} trains intelligently rerouted."
     
-    alerts = check_and_generate_alerts(optimized_trains)
+    alerts = check_and_generate_alerts(optimized_trains, scenario.disasters)
     
     # Update global alerts
     ACTIVE_ALERTS.clear()
