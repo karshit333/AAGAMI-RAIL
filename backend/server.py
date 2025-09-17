@@ -439,7 +439,7 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
     priority_weights = {Priority.HIGH: 3, Priority.MEDIUM: 2, Priority.LOW: 1}
     
     # Add VIP train if disaster includes it
-    vip_disaster = next((d for d in disasters if d.type == DisasterType.VIP_TRAIN), None) if disasters else None
+    vip_disaster = next((d for d in disasters if d.type == DisasterType.EMERGENCY_TRAIN), None) if disasters else None
     if vip_disaster:
         vip_train = Train(
             priority=Priority.HIGH,
