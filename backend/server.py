@@ -773,6 +773,8 @@ def generate_enhanced_explanations(trains: List[Train], disasters: List[Disaster
                 disaster_types.append("emergency train deployment")
             elif disaster.type == DisasterType.BREAKDOWN:
                 disaster_types.append(f"train breakdown blocking {disaster.affected_route}")
+            elif disaster.type == DisasterType.HUMAN_STRIKE:
+                disaster_types.append(f"railway workers strike reducing operations by {int(disaster.speed_reduction*100)}%")
         
         explanations.append(disaster_context + ", ".join(disaster_types))
         explanations.append("🧠 AI EMERGENCY RESPONSE: Implementing immediate clearance protocol...")
