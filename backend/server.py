@@ -258,9 +258,9 @@ DISASTER_SCENARIOS = {
         disasters=[Disaster(type=DisasterType.EMERGENCY_TRAIN, description="Emergency train requires immediate priority", severity="critical")],
         description="Emergency train insertion requires immediate priority clearance"
     ),
-    "breakdown_ce": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.BREAKDOWN, affected_route="C-D", duration_minutes=15, description="Freight train breakdown blocks C-D", severity="low")],
-        description="Train breakdown blocks C-D section for 15 minutes"
+    "human_strike": DisasterScenario(
+        disasters=[Disaster(type=DisasterType.HUMAN_STRIKE, affected_route="all", duration_minutes=240, description="Railway workers strike affects network operations", severity="high", speed_reduction=0.6)],
+        description="Railway workers strike reduces operational capacity network-wide"
     ),
     "multiple_disasters": DisasterScenario(
         disasters=[
