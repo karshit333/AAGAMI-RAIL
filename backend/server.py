@@ -571,7 +571,17 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                 new_train.status = "delayed" if delay_from_speed < 15 else "critical"
                 new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + delay_from_speed)
                 new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + delay_from_speed)
-                explanations.append(f"Train {train.id[:6]} delayed {delay_from_speed} min due to {int(speed_reduction*100)}% speed reduction")
+                
+                # Determine the cause of speed reduction
+                speed_cause = "speed restrictions"
+                if disasters:
+                    for disaster in disasters:
+                        if disaster.type == DisasterType.WEATHER and disaster.speed_reduction > 0:
+                            speed_cause = f"{int(disaster.speed_reduction*100)}% speed reduction due to weather conditions"
+                        elif disaster.type == DisasterType.HUMAN_STRIKE and disaster.speed_reduction > 0:
+                            speed_cause = f"{int(disaster.speed_reduction*100)}% operational reduction due to railway workers strike"
+                
+                explanations.append(f"Train {train.id[:6]} delayed {delay_from_speed} min due to {speed_cause}")
             
             # Normal conflict resolution for non-blocked routes
             elif not is_blocked:
