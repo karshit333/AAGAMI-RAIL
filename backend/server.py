@@ -252,9 +252,9 @@ DISASTER_SCENARIOS = {
         disasters=[Disaster(type=DisasterType.WEATHER, affected_route="all", speed_reduction=0.4, description="Dense fog reduces visibility", severity="medium")],
         description="Weather disruption reduces train speeds by 40% across network"
     ),
-    "vip_train": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.EMERGENCY_TRAIN, description="Emergency VIP train requires immediate priority", severity="high")],
-        description="Emergency VIP train insertion requires priority clearance"
+    "emergency_train": DisasterScenario(
+        disasters=[Disaster(type=DisasterType.EMERGENCY_TRAIN, description="Emergency train requires immediate priority", severity="critical")],
+        description="Emergency train insertion requires immediate priority clearance"
     ),
     "breakdown_ce": DisasterScenario(
         disasters=[Disaster(type=DisasterType.BREAKDOWN, affected_route="C-D", duration_minutes=15, description="Freight train breakdown blocks C-D", severity="low")],
