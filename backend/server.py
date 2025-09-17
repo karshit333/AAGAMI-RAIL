@@ -464,7 +464,7 @@ def apply_disasters(routes: List[Route], disasters: List[Disaster]) -> List[Rout
                 if route.id == disaster.affected_route:
                     route.blocked = True
                     
-        elif disaster.type == DisasterType.WEATHER:
+        elif disaster.type == DisasterType.WEATHER or disaster.type == DisasterType.HUMAN_STRIKE:
             # Reduce speed on all or specific routes
             for route in affected_routes:
                 if disaster.affected_route == "all" or route.id == disaster.affected_route:
