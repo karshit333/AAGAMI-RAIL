@@ -46,6 +46,7 @@ const AdvancedDisasterManager = ({
     { value: 'equipment_failure', label: 'Signal Failure', icon: '⚠️', description: 'Equipment malfunction disrupts operations' },
     { value: 'weather', label: 'Weather Impact', icon: '🌧️', description: 'Reduces visibility and safe operating speeds' },
     { value: 'breakdown', label: 'Train Breakdown', icon: '🚂', description: 'Disabled train blocks track section' },
+    { value: 'human_strike', label: 'Human Strike', icon: '✊', description: 'Railway worker strike disrupts operations' },
     { value: 'emergency_train', label: 'Emergency Train', icon: '🚨', description: 'High-priority emergency train requires immediate clearance' },
     { value: 'custom', label: 'Custom Disruption', icon: '⚙️', description: 'Define specific operational disruption' }
   ];
