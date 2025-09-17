@@ -494,18 +494,18 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
     # Priority weights for sorting
     priority_weights = {Priority.HIGH: 3, Priority.MEDIUM: 2, Priority.LOW: 1}
     
-    # Add VIP train if disaster includes it
-    vip_disaster = next((d for d in disasters if d.type == DisasterType.EMERGENCY_TRAIN), None) if disasters else None
-    if vip_disaster:
-        vip_train = Train(
+    # Add Emergency train if disaster includes it
+    emergency_disaster = next((d for d in disasters if d.type == DisasterType.EMERGENCY_TRAIN), None) if disasters else None
+    if emergency_disaster:
+        emergency_train = Train(
             priority=Priority.HIGH,
             planned_arrival="08:12",
             planned_departure="08:27",
-            route="A-B",  # VIP train takes priority route
-            details=generate_train_details("A-B")
+            route=emergency_disaster.affected_route or "A-B",  # Use specified route or default
+            details=generate_train_details(emergency_disaster.affected_route or "A-B")
         )
-        trains = [vip_train] + trains
-        explanations.append("Emergency VIP train inserted with highest priority on A-B route")
+        trains = [emergency_train] + trains
+        explanations.append(f"🚨 EMERGENCY TRAIN DEPLOYED: High-priority emergency train inserted on route {emergency_disaster.affected_route or 'A-B'} - all scheduled trains rescheduled for immediate clearance")
     
     # Group trains by original route
     route_trains = defaultdict(list)
