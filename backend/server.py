@@ -706,7 +706,7 @@ def generate_enhanced_explanations(trains: List[Train], disasters: List[Disaster
                 disaster_types.append(f"weather reducing speeds by {int(disaster.speed_reduction*100)}%")
             elif disaster.type == DisasterType.EQUIPMENT_FAILURE:
                 disaster_types.append(f"signal failure on {disaster.affected_route}")
-            elif disaster.type == DisasterType.VIP_TRAIN:
+            elif disaster.type == DisasterType.EMERGENCY_TRAIN:
                 disaster_types.append("emergency priority train insertion")
             elif disaster.type == DisasterType.BREAKDOWN:
                 disaster_types.append(f"train breakdown blocking {disaster.affected_route}")
