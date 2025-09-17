@@ -306,42 +306,97 @@ def generate_alert(alert_type: AlertType, title: str, message: str, severity: st
     )
 
 
-def check_and_generate_alerts(trains: List[Train]) -> List[Alert]:
-    """Check system state and generate appropriate alerts"""
+def check_and_generate_alerts(trains: List[Train], disasters: List[Disaster] = None) -> List[Alert]:
+    """Check system state and generate appropriate alerts with detailed reasons"""
     alerts = []
     
     for train in trains:
-        # Critical delay alert
+        # Determine delay reason
+        delay_reason = "Unknown cause"
+        if disasters:
+            for disaster in disasters:
+                if disaster.type == DisasterType.FLOOD and disaster.affected_route in [train.route, train.new_route]:
+                    delay_reason = f"Track flooding on {disaster.affected_route}"
+                elif disaster.type == DisasterType.EQUIPMENT_FAILURE and disaster.affected_route in [train.route, train.new_route]:
+                    delay_reason = f"Signal equipment failure on {disaster.affected_route}"
+                elif disaster.type == DisasterType.WEATHER:
+                    delay_reason = f"Weather conditions reducing speeds by {int(disaster.speed_reduction*100)}%"
+                elif disaster.type == DisasterType.BREAKDOWN and disaster.affected_route in [train.route, train.new_route]:
+                    delay_reason = f"Train breakdown blocking {disaster.affected_route}"
+                elif disaster.type == DisasterType.EMERGENCY_TRAIN:
+                    delay_reason = "Emergency train priority clearance"
+        else:
+            # No disaster - likely scheduling conflict
+            delay_reason = "Priority-based scheduling conflict resolution"
+        
+        # Critical delay alert with reason
         if train.delay_minutes > 15:
             alerts.append(generate_alert(
                 AlertType.CRITICAL_DELAY,
                 f"Critical Delay - Train {train.id[:6]}",
-                f"Train {train.id[:6]} is delayed by {train.delay_minutes} minutes on route {train.route}",
+                f"Train {train.id[:6]} delayed by {train.delay_minutes} minutes. Reason: {delay_reason}. Route: {train.rerouted and train.new_route or train.route}",
                 "critical",
                 train_id=train.id,
-                route_id=train.route
+                route_id=train.rerouted and train.new_route or train.route
             ))
         
-        # VIP train alert
+        # High priority train alert with detailed reason
         if train.priority == Priority.HIGH and train.delay_minutes > 5:
+            priority_reason = delay_reason
+            if train.rerouted:
+                priority_reason += f" - Rerouted via {train.new_route}"
+            
             alerts.append(generate_alert(
                 AlertType.VIP_TRAIN,
-                f"VIP Train Delayed - {train.id[:6]}",
-                f"High priority train {train.id[:6]} experiencing {train.delay_minutes} min delay",
+                f"High Priority Train Affected - {train.id[:6]}",
+                f"High priority train {train.id[:6]} experiencing {train.delay_minutes} min delay. Cause: {priority_reason}. Alternative measures implemented.",
                 "high",
-                train_id=train.id
+                train_id=train.id,
+                route_id=train.rerouted and train.new_route or train.route
             ))
-    
-    # Route blockage alerts
-    for disaster in ACTIVE_DISASTERS:
-        if disaster.type in [DisasterType.FLOOD, DisasterType.BREAKDOWN, DisasterType.EQUIPMENT_FAILURE]:
+        
+        # Rerouting alert with explanation
+        if train.rerouted:
             alerts.append(generate_alert(
                 AlertType.ROUTE_BLOCKAGE,
-                f"Route Blocked - {disaster.affected_route}",
-                f"{disaster.description} - Route {disaster.affected_route} unavailable",
-                disaster.severity,
-                route_id=disaster.affected_route
+                f"Train Rerouted - {train.id[:6]}",
+                f"Train {train.id[:6]} intelligently rerouted from {train.route} to {train.new_route}. Reason: {delay_reason}. Additional delay: {train.delay_minutes} minutes.",
+                "medium",
+                train_id=train.id,
+                route_id=train.new_route
             ))
+    
+    # Route blockage alerts with specific details
+    if disasters:
+        for disaster in disasters:
+            if disaster.type in [DisasterType.FLOOD, DisasterType.BREAKDOWN, DisasterType.EQUIPMENT_FAILURE]:
+                severity_map = {"low": "low", "medium": "medium", "high": "high", "critical": "critical"}
+                
+                impact_description = ""
+                if disaster.type == DisasterType.FLOOD:
+                    impact_description = f"Track flooding makes {disaster.affected_route} impassable"
+                elif disaster.type == DisasterType.BREAKDOWN:
+                    impact_description = f"Disabled train blocking {disaster.affected_route} for ~{disaster.duration_minutes}min"
+                elif disaster.type == DisasterType.EQUIPMENT_FAILURE:
+                    impact_description = f"Signal system failure on {disaster.affected_route}"
+                
+                affected_trains = len([t for t in trains if t.route == disaster.affected_route or (t.rerouted and t.new_route == disaster.affected_route)])
+                
+                alerts.append(generate_alert(
+                    AlertType.ROUTE_BLOCKAGE,
+                    f"Route Disruption - {disaster.affected_route}",
+                    f"{impact_description}. {affected_trains} trains affected. AI implementing rerouting and delay minimization strategies.",
+                    severity_map.get(disaster.severity, "medium"),
+                    route_id=disaster.affected_route
+                ))
+            
+            elif disaster.type == DisasterType.EMERGENCY_TRAIN:
+                alerts.append(generate_alert(
+                    AlertType.VIP_TRAIN,
+                    "Emergency Train Deployment",
+                    f"Emergency train deployed with highest priority. All scheduled trains rescheduled for immediate clearance. Network recovery in progress.",
+                    "critical"
+                ))
     
     return alerts
 
