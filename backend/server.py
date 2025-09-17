@@ -331,6 +331,8 @@ def check_and_generate_alerts(trains: List[Train], disasters: List[Disaster] = N
                     delay_reason = f"Train breakdown blocking {disaster.affected_route}"
                 elif disaster.type == DisasterType.EMERGENCY_TRAIN:
                     delay_reason = "Emergency train priority clearance"
+                elif disaster.type == DisasterType.HUMAN_STRIKE:
+                    delay_reason = f"Railway workers strike reducing operations by {int(disaster.speed_reduction*100)}%"
         else:
             # No disaster - likely scheduling conflict
             delay_reason = "Priority-based scheduling conflict resolution"
