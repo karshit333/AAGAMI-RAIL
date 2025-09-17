@@ -276,10 +276,10 @@ const AdvancedDisasterManager = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="critical">Medical Emergency</SelectItem>
-                      <SelectItem value="high">VIP Transport</SelectItem>
-                      <SelectItem value="high">Disaster Response</SelectItem>
-                      <SelectItem value="critical">Security Emergency</SelectItem>
+                      <SelectItem value="medical">Medical Emergency</SelectItem>
+                      <SelectItem value="vip">VIP Transport</SelectItem>
+                      <SelectItem value="disaster">Disaster Response</SelectItem>
+                      <SelectItem value="security">Security Emergency</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
