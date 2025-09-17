@@ -253,7 +253,7 @@ DISASTER_SCENARIOS = {
         description="Weather disruption reduces train speeds by 40% across network"
     ),
     "vip_train": DisasterScenario(
-        disasters=[Disaster(type=DisasterType.VIP_TRAIN, description="Emergency VIP train requires immediate priority", severity="high")],
+        disasters=[Disaster(type=DisasterType.EMERGENCY_TRAIN, description="Emergency VIP train requires immediate priority", severity="high")],
         description="Emergency VIP train insertion requires priority clearance"
     ),
     "breakdown_ce": DisasterScenario(
