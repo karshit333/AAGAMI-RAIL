@@ -69,17 +69,38 @@ const AdvancedDisasterManager = ({
   };
 
   const addCustomDisaster = () => {
-    if (!customForm.affected_route || !customForm.description) {
-      return;
+    // Set default values for emergency train
+    if (customForm.type === 'emergency_train') {
+      const emergencyDisaster = {
+        ...customForm,
+        id: Date.now().toString(),
+        affected_route: customForm.affected_route || 'A-B',
+        duration_minutes: 15, // Emergency trains need quick clearance
+        speed_reduction: 0, // No speed reduction for emergency
+        severity: customForm.severity || 'critical',
+        ai_predicted_impact: predictDisasterImpact({
+          ...customForm,
+          severity: customForm.severity || 'critical',
+          duration_minutes: 15
+        })
+      };
+      
+      setCustomDisasters([...customDisasters, emergencyDisaster]);
+    } else {
+      // Normal disaster handling
+      if (!customForm.affected_route || !customForm.description) {
+        return;
+      }
+
+      const newDisaster = {
+        ...customForm,
+        id: Date.now().toString(),
+        ai_predicted_impact: predictDisasterImpact(customForm)
+      };
+
+      setCustomDisasters([...customDisasters, newDisaster]);
     }
-
-    const newDisaster = {
-      ...customForm,
-      id: Date.now().toString(),
-      ai_predicted_impact: predictDisasterImpact(customForm)
-    };
-
-    setCustomDisasters([...customDisasters, newDisaster]);
+    
     resetCustomForm();
   };
 
