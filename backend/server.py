@@ -43,6 +43,7 @@ class DisasterType(str, Enum):
     WEATHER = "weather"
     EMERGENCY_TRAIN = "emergency_train"
     BREAKDOWN = "breakdown"
+    HUMAN_STRIKE = "human_strike"
     CUSTOM = "custom"
 
 class AlertType(str, Enum):
