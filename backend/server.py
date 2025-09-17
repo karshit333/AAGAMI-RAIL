@@ -989,12 +989,53 @@ async def apply_disaster_scenario(scenario: DisasterScenario):
 @api_router.post("/disaster/custom", response_model=OptimizationResult)
 async def apply_custom_disaster(disaster: CustomDisaster):
     """Apply custom disaster scenario"""
+    trains = SAMPLE_TRAINS
+    
+    # Reset trains and keep original for comparison
+    original_trains = copy.deepcopy(trains)
+    for train in trains:
+        train.delay_minutes = 0
+        train.optimized_arrival = None
+        train.optimized_departure = None
+        train.rerouted = False
+        train.new_route = None
+        train.explanation = None
+        train.status = "on_time"
+    
+    disaster_obj = Disaster(**disaster.dict())
     scenario = DisasterScenario(
-        disasters=[Disaster(**disaster.dict())],
-        description=f"Custom disaster: {disaster.description}"
+        disasters=[disaster_obj],
+        description=f"Custom disruption: {disaster.description}"
     )
     
-    return await apply_disaster_scenario(scenario)
+    optimized_trains, basic_explanations = optimize_with_disasters(trains, scenario.disasters)
+    kpis = calculate_advanced_kpis(original_trains, optimized_trains, scenario.disasters)
+    
+    # Generate enhanced explanations and comprehensive analysis
+    enhanced_explanations = generate_enhanced_explanations(optimized_trains, scenario.disasters)
+    what_changed = generate_what_changed_summary(original_trains, optimized_trains, scenario.disasters)
+    
+    # Create disaster summary from what_changed analysis
+    effectiveness = what_changed["summary_stats"]["optimization_effectiveness"]
+    disaster_summary = f"AI Response Effectiveness: {effectiveness}% - {what_changed['impact_analysis']['delay_impact']['description']}"
+    if what_changed["summary_stats"]["rerouted_trains"] > 0:
+        disaster_summary += f" {what_changed['summary_stats']['rerouted_trains']} trains intelligently rerouted."
+    
+    alerts = check_and_generate_alerts(optimized_trains, scenario.disasters)
+    
+    # Update global alerts
+    ACTIVE_ALERTS.clear()
+    ACTIVE_ALERTS.extend(alerts)
+    
+    return OptimizationResult(
+        original_trains=original_trains,
+        optimized_trains=optimized_trains,
+        kpis=kpis,
+        explanations=enhanced_explanations,
+        disaster_summary=disaster_summary,
+        alerts=alerts,
+        what_changed=what_changed
+    )
 
 
 @api_router.get("/disaster-scenarios")
