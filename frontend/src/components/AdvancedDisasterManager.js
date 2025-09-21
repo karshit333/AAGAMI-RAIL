@@ -29,6 +29,8 @@ const AdvancedDisasterManager = ({
 }) => {
   const [selectedDisaster, setSelectedDisaster] = useState("");
   const [customDisasters, setCustomDisasters] = useState([]);
+  const [simultaneousDisasters, setSimultaneousDisasters] = useState([]);
+
   // Auto-generate description suggestions based on type and route
   const generateDisasterDescription = (type, route) => {
     const routeNames = {
