@@ -89,39 +89,49 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
                 {/* Main route line */}
                 <path
                   d={`M ${route.path[0].x} ${route.path[0].y} ${route.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
-                  stroke={route.blocked ? "#ef4444" : route.speed_reduction > 0 ? "#f59e0b" : "#6b7280"}
-                  strokeWidth="4"
+                  stroke={route.blocked ? "#1f2937" : route.speed_reduction > 0 ? "#fbbf24" : "#6b7280"}
+                  strokeWidth={route.blocked ? "6" : route.speed_reduction > 0 ? "5" : "4"}
                   fill="none"
-                  strokeDasharray={route.blocked ? "12,8" : route.speed_reduction > 0 ? "8,4" : "8,4"}
-                  opacity={route.blocked ? "0.8" : "0.6"}
+                  strokeDasharray={route.blocked ? "0" : route.speed_reduction > 0 ? "8,4" : "8,4"}
+                  opacity={route.blocked ? "0.9" : route.speed_reduction > 0 ? "0.8" : "0.6"}
                 />
                 
                 {/* Blocked route indicator */}
                 {route.blocked && (
-                  <text
-                    x={(route.path[0].x + route.path[route.path.length - 1].x) / 2}
-                    y={(route.path[0].y + route.path[route.path.length - 1].y) / 2 - 20}
-                    textAnchor="middle"
-                    fontSize="10"
-                    fill="#dc2626"
-                    fontWeight="600"
-                    className="animate-pulse"
-                  >
-                    BLOCKED
-                  </text>
+                  <>
+                    <text
+                      x={(route.path[0].x + route.path[route.path.length - 1].x) / 2}
+                      y={(route.path[0].y + route.path[route.path.length - 1].y) / 2 - 20}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fill="#ffffff"
+                      fontWeight="700"
+                      className="animate-pulse"
+                    >
+                      ❌ BLOCKED
+                    </text>
+                    {/* Dark overlay for blocked routes */}
+                    <path
+                      d={`M ${route.path[0].x} ${route.path[0].y} ${route.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                      stroke="#000000"
+                      strokeWidth="3"
+                      fill="none"
+                      opacity="0.7"
+                    />
+                  </>
                 )}
                 
                 {/* Speed reduction indicator */}
-                {route.speed_reduction > 0 && (
+                {route.speed_reduction > 0 && !route.blocked && (
                   <text
                     x={(route.path[0].x + route.path[route.path.length - 1].x) / 2}
                     y={(route.path[0].y + route.path[route.path.length - 1].y) / 2 - 20}
                     textAnchor="middle"
                     fontSize="10"
                     fill="#d97706"
-                    fontWeight="500"
+                    fontWeight="600"
                   >
-                    SLOW
+                    ⚠️ SLOW -{Math.round(route.speed_reduction * 100)}%
                   </text>
                 )}
               </>
@@ -143,20 +153,40 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
           </g>
         ))}
 
-        {/* Rerouted paths - show in green */}
+        {/* Rerouted paths - show in bright yellow with enhanced visibility */}
         {animatedTrains.filter(train => train.rerouted).map((train, index) => {
           if (!train.routeData || train.routeData.path.length < 2) return null;
           
           return (
-            <path
-              key={`reroute-${index}`}
-              d={`M ${train.routeData.path[0].x} ${train.routeData.path[0].y} ${train.routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
-              stroke="#10b981"
-              strokeWidth="3"
-              fill="none"
-              strokeDasharray="6,3"
-              opacity="0.8"
-            />
+            <g key={`reroute-${index}`}>
+              {/* Enhanced rerouted path with glow effect */}
+              <path
+                d={`M ${train.routeData.path[0].x} ${train.routeData.path[0].y} ${train.routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                stroke="#fbbf24"
+                strokeWidth="8"
+                fill="none"
+                opacity="0.3"
+              />
+              <path
+                d={`M ${train.routeData.path[0].x} ${train.routeData.path[0].y} ${train.routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                stroke="#f59e0b"
+                strokeWidth="4"
+                fill="none"
+                strokeDasharray="6,3"
+                opacity="0.9"
+              />
+              {/* Rerouted route label */}
+              <text
+                x={(train.routeData.path[0].x + train.routeData.path[train.routeData.path.length - 1].x) / 2}
+                y={(train.routeData.path[0].y + train.routeData.path[train.routeData.path.length - 1].y) / 2 + 15}
+                textAnchor="middle"
+                fontSize="9"
+                fill="#d97706"
+                fontWeight="600"
+              >
+                🔄 REROUTED VIA {train.new_route}
+              </text>
+            </g>
           );
         })}
 
