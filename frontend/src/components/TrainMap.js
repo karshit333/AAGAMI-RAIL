@@ -236,60 +236,111 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
           
           return (
             <g key={train.id} onClick={() => onTrainClick && onTrainClick(train.id)} className="cursor-pointer">
-              {/* Train dot with priority color */}
+              {/* Train dot with priority color and enhanced styling */}
               <circle
                 cx={train.position.x}
                 cy={train.position.y}
-                r="10"
+                r="12"
                 fill={fillColor}
                 stroke="#ffffff"
-                strokeWidth="2"
-                opacity="0.9"
-                className="drop-shadow-sm hover:r-12 transition-all"
+                strokeWidth="3"
+                opacity="0.95"
+                className="drop-shadow-md hover:r-15 transition-all"
               >
                 <animate
                   attributeName="r"
-                  values="10;12;10"
-                  dur="3s"
+                  values={train.rerouted ? "12;15;12" : "12;14;12"}
+                  dur={train.rerouted ? "2s" : "3s"}
                   repeatCount="indefinite"
                 />
               </circle>
               
-              {/* Train ID label */}
+              {/* Special indicator for rerouted trains */}
+              {train.rerouted && (
+                <circle
+                  cx={train.position.x}
+                  cy={train.position.y}
+                  r="18"
+                  fill="none"
+                  stroke="#fbbf24"
+                  strokeWidth="2"
+                  strokeDasharray="3,3"
+                  opacity="0.7"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    values={`0 ${train.position.x} ${train.position.y}; 360 ${train.position.x} ${train.position.y}`}
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              )}
+              
+              {/* Train ID label with enhanced visibility */}
               <text
                 x={train.position.x}
-                y={train.position.y - 18}
+                y={train.position.y - 22}
                 textAnchor="middle"
-                fontSize="8"
+                fontSize="9"
                 fill="#1f2937"
-                fontWeight="500"
+                fontWeight="600"
+                className="drop-shadow-sm"
               >
                 {train.id.slice(0, 6)}
               </text>
               
-              {/* Delay indicator */}
+              {/* Delay indicator with enhanced styling */}
               {train.delay_minutes > 0 && (
                 <text
                   x={train.position.x}
-                  y={train.position.y + 25}
+                  y={train.position.y + 28}
                   textAnchor="middle"
                   fontSize="8"
                   fill="#dc2626"
-                  fontWeight="600"
+                  fontWeight="700"
                   className="animate-pulse"
                 >
-                  +{train.delay_minutes}m
+                  ⏰ +{train.delay_minutes}m
                 </text>
               )}
               
-              {/* Reroute indicator */}
+              {/* Reroute indicator with improved visibility */}
               {train.rerouted && (
-                <circle
-                  cx={train.position.x + 12}
-                  cy={train.position.y - 12}
-                  r="3"
-                  fill="#10b981"
-                />
+                <>
+                  <circle
+                    cx={train.position.x + 15}
+                    cy={train.position.y - 15}
+                    r="4"
+                    fill="#fbbf24"
+                    stroke="#ffffff"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x={train.position.x + 15}
+                    y={train.position.y - 12}
+                    textAnchor="middle"
+                    fontSize="6"
+                    fill="#000000"
+                    fontWeight="700"
+                  >
+                    R
+                  </text>
+                </>
+              )}
+              
+              {/* Priority indicator */}
+              {train.priority === 'High' && (
+                <text
+                  x={train.position.x}
+                  y={train.position.y + 6}
+                  textAnchor="middle"
+                  fontSize="8"
+                  fill="#ffffff"
+                  fontWeight="700"
+                >
+                  ★
+                </text>
               )}
             </g>
           );
