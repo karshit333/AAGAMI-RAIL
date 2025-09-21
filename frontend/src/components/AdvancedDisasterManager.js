@@ -29,7 +29,50 @@ const AdvancedDisasterManager = ({
 }) => {
   const [selectedDisaster, setSelectedDisaster] = useState("");
   const [customDisasters, setCustomDisasters] = useState([]);
-  const [simultaneousDisasters, setSimultaneousDisasters] = useState([]);
+  // Auto-generate description suggestions based on type and route
+  const generateDisasterDescription = (type, route) => {
+    const routeNames = {
+      'A-B': 'Delhi-Ghaziabad section',
+      'B-C': 'Ghaziabad-Moradabad section',
+      'C-D': 'Moradabad-Bareilly section', 
+      'D-E': 'Bareilly-Lucknow section',
+      'B-E': 'Ghaziabad-Lucknow direct route',
+      'A-C': 'Delhi-Moradabad bypass route',
+      'A-E': 'Delhi-Lucknow express route',
+      'all': 'entire railway network'
+    };
+
+    const routeName = routeNames[route] || route;
+    
+    switch(type) {
+      case 'flood':
+        return `Heavy monsoon flooding has submerged tracks on ${routeName}, making the railway section completely impassable for train operations.`;
+      case 'equipment_failure':
+        return `Critical signal equipment malfunction at ${routeName} causing automatic train protection system failures and requiring immediate technical intervention.`;
+      case 'weather':
+        return `Dense fog and adverse weather conditions across ${routeName} have reduced visibility to dangerous levels, requiring speed restrictions for safe operations.`;
+      case 'breakdown':
+        return `Freight train mechanical breakdown has left a disabled locomotive blocking ${routeName}, requiring crane assistance for removal.`;
+      case 'human_strike':
+        return `Labor protest with demonstrators occupying railway tracks on ${routeName}, creating safety concerns and requiring security intervention before train operations can resume.`;
+      case 'emergency_train':
+        return `Medical emergency requiring immediate dispatch of special ambulance train with priority clearance on ${routeName} to transport critical patients.`;
+      case 'custom':
+        return `Operational disruption affecting normal train services on ${routeName}.`;
+      default:
+        return '';
+    }
+  };
+
+  // Auto-update description when type or route changes
+  useEffect(() => {
+    if (customForm.type && customForm.affected_route) {
+      const autoDescription = generateDisasterDescription(customForm.type, customForm.affected_route);
+      if (autoDescription && !customForm.description) {
+        setCustomForm(prev => ({...prev, description: autoDescription}));
+      }
+    }
+  }, [customForm.type, customForm.affected_route]);
 
   // Custom disaster form state
   const [customForm, setCustomForm] = useState({
