@@ -221,6 +221,8 @@
 
 ## agent_communication:
     -agent: "main"
-    -message: "Starting implementation of pending tasks. Two frontend tasks need work: 1) Schedule table enhancement, 2) Duration field removal. Map disaster effects and train ID format appear to be working correctly already."
+    -message: "Successfully implemented all pending tasks. Backend testing completed with 12/12 tests passing. Frontend changes implemented and verified via screenshots. Ready for user confirmation on frontend testing."
+    -agent: "deep_testing_backend_v2"  
+    -message: "All backend API endpoints working correctly for pending tasks: 1) ETA display shows both original and optimized times, 2) Custom disasters work without duration field, 3) Train IDs consistently use TRN001-TRN010 format, 4) Route data includes disaster effects. All 12 tests passed."
     -agent: "testing"
     -message: "COMPREHENSIVE BACKEND TESTING COMPLETED - ALL REQUIREMENTS VERIFIED: ✅ Train Schedule API (/api/optimize) returns both original (planned_arrival/departure) and optimized ETAs (optimized_arrival/departure) for displaying 'Before ETA' vs 'Current ETA'. ✅ Custom disasters work without duration_minutes field via /api/disaster/custom with default 30min duration applied. ✅ Emergency train insertion via disaster type 'emergency_train' successfully adds EMG001 with high priority. ✅ All 6 disaster types (flood, equipment_failure, weather, breakdown, human_strike, emergency_train) process correctly. ✅ Train IDs consistently use TRN001-TRN010 format across all endpoints (/api/trains, /api/optimize, disaster responses). ✅ Routes (/api/routes) and stations (/api/stations) provide disaster effect fields (blocked, speed_reduction) for map visualization. All 12 backend tests passed successfully."
