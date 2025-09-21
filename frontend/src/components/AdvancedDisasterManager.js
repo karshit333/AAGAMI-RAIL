@@ -94,7 +94,8 @@ const AdvancedDisasterManager = ({
       const newDisaster = {
         ...customForm,
         id: Date.now().toString(),
-        ai_predicted_impact: predictDisasterImpact(customForm)
+        duration_minutes: 30, // Default duration for non-emergency disasters
+        ai_predicted_impact: predictDisasterImpact({...customForm, duration_minutes: 30})
       };
 
       setCustomDisasters([...customDisasters, newDisaster]);
