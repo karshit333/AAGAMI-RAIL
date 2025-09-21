@@ -255,6 +255,18 @@
   test_all: false
   test_priority: "high_first"
 
+  - task: "Enhanced rerouting logic with proper alternate path finding"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: Enhanced rerouting logic working perfectly. Flood disaster on A-B route properly reroutes trains via alternate paths (A→C→B using routes A-C, B-C). All rerouted trains include alternate_path_stations and alternate_route_segments fields. Different blocked routes (B-C, C-D) handled correctly with appropriate alternate paths. No trains rerouted 'via blocked routes'. Response structure includes complete alternate path information for map visualization. All 17 backend tests passed including 5 new enhanced rerouting tests."
+
 ## agent_communication:
     -agent: "main"
     -message: "Successfully implemented all pending tasks. Backend testing completed with 12/12 tests passing. Frontend changes implemented and verified via screenshots. Ready for user confirmation on frontend testing."
@@ -264,3 +276,5 @@
     -message: "COMPREHENSIVE BACKEND TESTING COMPLETED - ALL REQUIREMENTS VERIFIED: ✅ Train Schedule API (/api/optimize) returns both original (planned_arrival/departure) and optimized ETAs (optimized_arrival/departure) for displaying 'Before ETA' vs 'Current ETA'. ✅ Custom disasters work without duration_minutes field via /api/disaster/custom with default 30min duration applied. ✅ Emergency train insertion via disaster type 'emergency_train' successfully adds EMG001 with high priority. ✅ All 6 disaster types (flood, equipment_failure, weather, breakdown, human_strike, emergency_train) process correctly. ✅ Train IDs consistently use TRN001-TRN010 format across all endpoints (/api/trains, /api/optimize, disaster responses). ✅ Routes (/api/routes) and stations (/api/stations) provide disaster effect fields (blocked, speed_reduction) for map visualization. All 12 backend tests passed successfully."
     -agent: "testing"
     -message: "COMPREHENSIVE FRONTEND TESTING COMPLETED: ✅ Enhanced Schedule Table: Successfully displays 'Before Optimization', 'After Optimization', and 'Impact' columns with train status indicators (Conflict Expected/On Schedule). ✅ Train ID Consistency: All trains use TRN001-TRN010 format consistently across dashboard and map. ✅ Map Visualization: Enhanced with proper legend, route status colors, disaster effects (blocked routes show as solid black, rerouted paths as yellow dashed). ✅ Auto-Description: Works for all disaster types with contextual suggestions. ❌ CRITICAL ISSUE: Duration field (Speed Reduction slider) still present in disaster form - needs removal as per requirements. ✅ Disaster Effects on Map: Properly shows blocked routes and rerouted trains when disasters are applied."
+    -agent: "testing"
+    -message: "ENHANCED REROUTING LOGIC TESTING COMPLETED - ALL REQUIREMENTS VERIFIED: ✅ Flood disaster on A-B route triggers proper alternate path finding (A→C→B via routes A-C, B-C). ✅ All rerouted trains include alternate_path_stations ['A', 'C', 'B'] and alternate_route_segments ['A-C', 'B-C'] fields. ✅ Different blocked routes tested: B-C reroutes via B→A→C using A-B, A-C routes. ✅ No trains rerouted 'via blocked routes' - all alternate paths avoid blocked sections completely. ✅ Response structure includes complete alternate path information for map visualization. ✅ Multiple disaster scenarios handled correctly with appropriate delays when no alternatives exist. ✅ Explanations mention actual alternate paths, not blocked routes. All 17 backend tests passed including 5 comprehensive enhanced rerouting tests."
