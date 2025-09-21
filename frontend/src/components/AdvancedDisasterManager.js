@@ -85,6 +85,24 @@ const AdvancedDisasterManager = ({
     }
   }, [customForm.type, customForm.affected_route]);
 
+  // Calculate default speed reduction based on disaster type and severity
+  const getDefaultSpeedReduction = (type, severity) => {
+    switch(type) {
+      case 'flood':
+      case 'breakdown':
+      case 'equipment_failure':
+        return 1.0; // Complete blockage for these disasters
+      case 'weather':
+        return severity === 'critical' ? 0.8 : severity === 'high' ? 0.6 : severity === 'medium' ? 0.4 : 0.2;
+      case 'human_strike':
+        return severity === 'critical' ? 0.9 : severity === 'high' ? 0.7 : severity === 'medium' ? 0.5 : 0.3;
+      case 'emergency_train':
+        return 0.0; // No speed reduction for emergency trains
+      default:
+        return severity === 'critical' ? 0.6 : severity === 'high' ? 0.4 : severity === 'medium' ? 0.3 : 0.1;
+    }
+  };
+
   const disasterTypes = [
     { value: 'flood', label: 'Track Flooding', icon: '🌊', description: 'Water logging blocks railway tracks' },
     { value: 'equipment_failure', label: 'Signal Failure', icon: '⚠️', description: 'Equipment malfunction disrupts operations' },
