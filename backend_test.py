@@ -622,26 +622,35 @@ class AagamiRailAPITester:
         return None
 
     def run_all_tests(self):
-        """Run all backend API tests"""
+        """Run all backend API tests - Enhanced for AAGAMI RAIL requirements"""
         print("🚂 AAGAMI RAIL Backend API Testing Suite")
         print("=" * 50)
         
-        # Test basic endpoints
+        # Test basic endpoints with enhanced validation
         self.test_api_root()
-        trains = self.test_get_trains()
+        trains = self.test_get_trains()  # Now tests TRN format
         stations = self.test_get_stations()
-        routes = self.test_get_routes()
+        routes = self.test_get_routes()  # Now tests disaster effect fields
         conflicts = self.test_get_conflicts()
         
-        # Test disaster scenarios
+        # Test optimization with ETA validation
+        optimization_result = self.test_optimize_trains(trains)  # Now tests both original and optimized ETAs
+        
+        # Test disaster scenarios with comprehensive validation
         scenarios = self.test_get_disaster_scenarios()
-        disaster_result = self.test_apply_disaster_scenario(scenarios)
+        disaster_result = self.test_apply_disaster_scenario(scenarios)  # Now tests train ID consistency
+        
+        # Test custom disaster without duration (key requirement)
+        self.test_custom_disaster_without_duration()
+        
+        # Test emergency train insertion
+        self.test_emergency_train_insertion()
+        
+        # Test all disaster types
+        self.test_all_disaster_types()
         
         # Test performance metrics
         performance = self.test_get_performance_metrics()
-        
-        # Test optimization with sample data
-        optimization_result = self.test_optimize_trains(trains)
         
         # Print summary
         print("\n" + "=" * 50)
@@ -649,6 +658,13 @@ class AagamiRailAPITester:
         
         if self.tests_passed == self.tests_run:
             print("🎉 All tests passed! Backend API is working correctly.")
+            print("\n✅ AAGAMI RAIL Requirements Verified:")
+            print("  • Train Schedule API returns both original and optimized ETAs")
+            print("  • Custom disasters work without requiring duration_minutes")
+            print("  • Emergency train insertion functions properly")
+            print("  • All disaster types process correctly")
+            print("  • Train IDs consistently use TRN001-TRN010 format")
+            print("  • Routes include disaster effect fields for map visualization")
             return 0
         else:
             print("⚠️  Some tests failed. Check the details above.")
