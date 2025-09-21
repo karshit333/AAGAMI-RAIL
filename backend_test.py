@@ -56,7 +56,7 @@ class AagamiRailAPITester:
             return False
 
     def test_get_trains(self):
-        """Test GET /api/trains endpoint"""
+        """Test GET /api/trains endpoint - Enhanced for train ID format"""
         try:
             response = requests.get(f"{self.api_url}/trains", timeout=10)
             success = response.status_code == 200
@@ -72,21 +72,34 @@ class AagamiRailAPITester:
                         # Check priority values
                         priorities = set(train['priority'] for train in trains)
                         expected_priorities = {'High', 'Medium', 'Low'}
-                        if priorities.issubset(expected_priorities):
-                            self.log_test("Get Trains Endpoint", True, f"Retrieved {len(trains)} trains")
+                        
+                        # Check train ID format (TRN001-TRN010)
+                        train_id_test_passed = True
+                        invalid_ids = []
+                        
+                        for train in trains:
+                            train_id = train.get('id', '')
+                            if not (train_id.startswith('TRN') and len(train_id) == 6 and train_id[3:].isdigit()):
+                                train_id_test_passed = False
+                                invalid_ids.append(train_id)
+                        
+                        if priorities.issubset(expected_priorities) and train_id_test_passed:
+                            self.log_test("Get Trains Endpoint (TRN Format)", True, f"Retrieved {len(trains)} trains with correct TRN001-TRN010 format")
                             return trains
+                        elif not train_id_test_passed:
+                            self.log_test("Get Trains Endpoint (TRN Format)", False, f"Invalid train ID formats: {invalid_ids}")
                         else:
-                            self.log_test("Get Trains Endpoint", False, f"Invalid priorities: {priorities}")
+                            self.log_test("Get Trains Endpoint (TRN Format)", False, f"Invalid priorities: {priorities}")
                     else:
                         missing_fields = [f for f in required_fields if f not in first_train]
-                        self.log_test("Get Trains Endpoint", False, f"Missing fields: {missing_fields}")
+                        self.log_test("Get Trains Endpoint (TRN Format)", False, f"Missing fields: {missing_fields}")
                 else:
-                    self.log_test("Get Trains Endpoint", False, f"Expected 10 trains, got {len(trains) if isinstance(trains, list) else 'non-list'}")
+                    self.log_test("Get Trains Endpoint (TRN Format)", False, f"Expected 10 trains, got {len(trains) if isinstance(trains, list) else 'non-list'}")
             else:
-                self.log_test("Get Trains Endpoint", False, f"Status code: {response.status_code}")
+                self.log_test("Get Trains Endpoint (TRN Format)", False, f"Status code: {response.status_code}")
                 
         except Exception as e:
-            self.log_test("Get Trains Endpoint", False, f"Exception: {str(e)}")
+            self.log_test("Get Trains Endpoint (TRN Format)", False, f"Exception: {str(e)}")
         
         return None
 
