@@ -249,9 +249,8 @@
 
 ## test_plan:
   current_focus:
-    - "Remove duration field from AI-Powered Disruption Designer"
-  stuck_tasks: 
-    - "Remove duration field from AI-Powered Disruption Designer"
+    - "Enhanced rerouting logic with proper alternate path finding"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
