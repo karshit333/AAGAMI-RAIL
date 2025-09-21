@@ -83,6 +83,8 @@ class Train(BaseModel):
     optimized_departure: Optional[str] = None
     rerouted: bool = False
     new_route: Optional[str] = None
+    alternate_path_stations: Optional[List[str]] = None  # List of stations in alternate path
+    alternate_route_segments: Optional[List[str]] = None  # List of route segments in alternate path
     explanation: Optional[str] = None
     details: TrainDetails = Field(default_factory=TrainDetails)
     current_position: float = 0.0  # 0.0 to 1.0 along route
