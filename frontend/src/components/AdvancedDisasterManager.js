@@ -36,7 +36,6 @@ const AdvancedDisasterManager = ({
     type: 'custom',
     affected_route: '',
     description: '',
-    speed_reduction: 0,
     severity: 'medium'
   });
 
