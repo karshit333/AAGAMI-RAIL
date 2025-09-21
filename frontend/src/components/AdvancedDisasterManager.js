@@ -31,6 +31,15 @@ const AdvancedDisasterManager = ({
   const [customDisasters, setCustomDisasters] = useState([]);
   const [simultaneousDisasters, setSimultaneousDisasters] = useState([]);
 
+  // Custom disaster form state
+  const [customForm, setCustomForm] = useState({
+    type: 'custom',
+    affected_route: '',
+    description: '',
+    speed_reduction: 0,
+    severity: 'medium'
+  });
+
   // Auto-generate description suggestions based on type and route
   const generateDisasterDescription = (type, route) => {
     const routeNames = {
@@ -77,7 +86,7 @@ const AdvancedDisasterManager = ({
   }, [customForm.type, customForm.affected_route]);
 
   // Custom disaster form state
-  const [customForm, setCustomForm] = useState({
+  const [originalCustomForm] = useState({
     type: 'custom',
     affected_route: '',
     description: '',
