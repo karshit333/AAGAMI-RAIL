@@ -409,7 +409,7 @@ def check_and_generate_alerts(trains: List[Train], disasters: List[Disaster] = N
     return alerts
 
 
-def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> List[List[str]]:
+def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> List[Dict]:
     """Find alternate paths between stations avoiding blocked routes"""
     # Create adjacency graph from available routes
     graph = defaultdict(list)
@@ -436,7 +436,25 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
                 continue
                 
             if current == end and len(path) > 1:
-                paths.append(path)
+                # Build route segments for this path
+                route_segments = []
+                for i in range(len(path) - 1):
+                    segment_start = path[i]
+                    segment_end = path[i + 1]
+                    route_key = f"{segment_start}-{segment_end}"
+                    reverse_key = f"{segment_end}-{segment_start}"
+                    
+                    if route_key in route_map:
+                        route_segments.append(route_map[route_key])
+                    elif reverse_key in route_map:
+                        route_segments.append(route_map[reverse_key])
+                
+                paths.append({
+                    'stations': path,
+                    'route_segments': route_segments,
+                    'path_description': ' → '.join(path),
+                    'route_description': ' → '.join(route_segments)
+                })
                 continue
             
             for neighbor in graph[current]:
