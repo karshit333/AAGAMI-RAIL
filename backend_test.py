@@ -126,7 +126,7 @@ class AagamiRailAPITester:
         return None
 
     def test_get_routes(self):
-        """Test GET /api/routes endpoint"""
+        """Test GET /api/routes endpoint - Enhanced for disaster effects"""
         try:
             response = requests.get(f"{self.api_url}/routes", timeout=10)
             success = response.status_code == 200
@@ -143,20 +143,31 @@ class AagamiRailAPITester:
                         route_ids = set(route['id'] for route in routes)
                         expected_ids = {'A-B', 'B-C', 'C-D', 'D-E', 'B-E', 'A-C', 'A-E'}
                         if route_ids == expected_ids:
-                            self.log_test("Get Routes Endpoint", True, f"Retrieved {len(routes)} routes")
+                            # Check for disaster effect fields (blocked, speed_reduction)
+                            disaster_fields_present = all(
+                                'blocked' in route and 'speed_reduction' in route 
+                                for route in routes
+                            )
+                            
+                            if disaster_fields_present:
+                                self.log_test("Get Routes Endpoint (Disaster Effects)", True, 
+                                            f"Retrieved {len(routes)} routes with disaster effect fields")
+                            else:
+                                self.log_test("Get Routes Endpoint (Disaster Effects)", False, 
+                                            "Routes missing disaster effect fields (blocked, speed_reduction)")
                             return routes
                         else:
-                            self.log_test("Get Routes Endpoint", False, f"Invalid route IDs: {route_ids}")
+                            self.log_test("Get Routes Endpoint (Disaster Effects)", False, f"Invalid route IDs: {route_ids}")
                     else:
                         missing_fields = [f for f in required_fields if f not in first_route]
-                        self.log_test("Get Routes Endpoint", False, f"Missing fields: {missing_fields}")
+                        self.log_test("Get Routes Endpoint (Disaster Effects)", False, f"Missing fields: {missing_fields}")
                 else:
-                    self.log_test("Get Routes Endpoint", False, f"Expected 7 routes, got {len(routes) if isinstance(routes, list) else 'non-list'}")
+                    self.log_test("Get Routes Endpoint (Disaster Effects)", False, f"Expected 7 routes, got {len(routes) if isinstance(routes, list) else 'non-list'}")
             else:
-                self.log_test("Get Routes Endpoint", False, f"Status code: {response.status_code}")
+                self.log_test("Get Routes Endpoint (Disaster Effects)", False, f"Status code: {response.status_code}")
                 
         except Exception as e:
-            self.log_test("Get Routes Endpoint", False, f"Exception: {str(e)}")
+            self.log_test("Get Routes Endpoint (Disaster Effects)", False, f"Exception: {str(e)}")
         
         return None
 
