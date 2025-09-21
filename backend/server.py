@@ -226,18 +226,18 @@ SAMPLE_ROUTES = [
     Route(id="A-E", stations=["A", "E"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 100}, {"x": 500, "y": 100}]),
 ]
 
-# Generate sample trains with enhanced details
+# Generate sample trains with realistic train numbers
 SAMPLE_TRAINS = [
-    Train(priority=Priority.HIGH, planned_arrival="08:00", planned_departure="08:15", route="A-B", details=generate_train_details("A-B")),
-    Train(priority=Priority.HIGH, planned_arrival="08:10", planned_departure="08:25", route="A-B", details=generate_train_details("A-B")),
-    Train(priority=Priority.MEDIUM, planned_arrival="08:05", planned_departure="08:20", route="B-C", details=generate_train_details("B-C")),
-    Train(priority=Priority.MEDIUM, planned_arrival="08:30", planned_departure="08:45", route="B-C", details=generate_train_details("B-C")),
-    Train(priority=Priority.LOW, planned_arrival="08:15", planned_departure="08:30", route="C-D", details=generate_train_details("C-D")),
-    Train(priority=Priority.HIGH, planned_arrival="08:20", planned_departure="08:35", route="D-E", details=generate_train_details("D-E")),
-    Train(priority=Priority.MEDIUM, planned_arrival="08:25", planned_departure="08:40", route="B-E", details=generate_train_details("B-E")),
-    Train(priority=Priority.LOW, planned_arrival="08:35", planned_departure="08:50", route="B-E", details=generate_train_details("B-E")),
-    Train(priority=Priority.HIGH, planned_arrival="08:40", planned_departure="08:55", route="C-D", details=generate_train_details("C-D")),
-    Train(priority=Priority.LOW, planned_arrival="08:45", planned_departure="09:00", route="A-B", details=generate_train_details("A-B")),
+    Train(id="TRN001", priority=Priority.HIGH, planned_arrival="08:00", planned_departure="08:15", route="A-B", details=generate_train_details("A-B")),
+    Train(id="TRN002", priority=Priority.HIGH, planned_arrival="08:10", planned_departure="08:25", route="A-B", details=generate_train_details("A-B")),
+    Train(id="TRN003", priority=Priority.MEDIUM, planned_arrival="08:05", planned_departure="08:20", route="B-C", details=generate_train_details("B-C")),
+    Train(id="TRN004", priority=Priority.MEDIUM, planned_arrival="08:30", planned_departure="08:45", route="B-C", details=generate_train_details("B-C")),
+    Train(id="TRN005", priority=Priority.LOW, planned_arrival="08:15", planned_departure="08:30", route="C-D", details=generate_train_details("C-D")),
+    Train(id="TRN006", priority=Priority.HIGH, planned_arrival="08:20", planned_departure="08:35", route="D-E", details=generate_train_details("D-E")),
+    Train(id="TRN007", priority=Priority.MEDIUM, planned_arrival="08:25", planned_departure="08:40", route="B-E", details=generate_train_details("B-E")),
+    Train(id="TRN008", priority=Priority.LOW, planned_arrival="08:35", planned_departure="08:50", route="B-E", details=generate_train_details("B-E")),
+    Train(id="TRN009", priority=Priority.HIGH, planned_arrival="08:40", planned_departure="08:55", route="C-D", details=generate_train_details("C-D")),
+    Train(id="TRN010", priority=Priority.LOW, planned_arrival="08:45", planned_departure="09:00", route="A-B", details=generate_train_details("A-B")),
 ]
 
 # Enhanced disaster scenarios
