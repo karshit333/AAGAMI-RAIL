@@ -153,39 +153,65 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
           </g>
         ))}
 
-        {/* Rerouted paths - show in bright yellow with enhanced visibility */}
-        {animatedTrains.filter(train => train.rerouted).map((train, index) => {
-          if (!train.routeData || train.routeData.path.length < 2) return null;
+        {/* Rerouted paths - show actual alternate routes in bright yellow */}
+        {animatedTrains.filter(train => train.rerouted && train.alternate_route_segments).map((train, index) => {
+          // Draw the alternate path using the route segments
+          const alternateRouteElements = [];
+          
+          if (train.alternate_route_segments && train.alternate_route_segments.length > 0) {
+            train.alternate_route_segments.forEach((routeSegment, segIndex) => {
+              const routeData = routes.find(r => r.id === routeSegment);
+              if (routeData && routeData.path.length >= 2) {
+                alternateRouteElements.push(
+                  <g key={`alt-segment-${index}-${segIndex}`}>
+                    {/* Glow effect for alternate route */}
+                    <path
+                      d={`M ${routeData.path[0].x} ${routeData.path[0].y} ${routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                      stroke="#fbbf24"
+                      strokeWidth="8"
+                      fill="none"
+                      opacity="0.3"
+                    />
+                    {/* Main alternate route line */}
+                    <path
+                      d={`M ${routeData.path[0].x} ${routeData.path[0].y} ${routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                      stroke="#f59e0b"
+                      strokeWidth="4"
+                      fill="none"
+                      strokeDasharray="6,3"
+                      opacity="0.9"
+                    />
+                  </g>
+                );
+              }
+            });
+            
+            // Add alternate route label
+            if (train.alternate_path_stations && train.alternate_path_stations.length >= 2) {
+              const startStation = stations.find(s => s.id === train.alternate_path_stations[0]);
+              const endStation = stations.find(s => s.id === train.alternate_path_stations[train.alternate_path_stations.length - 1]);
+              
+              if (startStation && endStation) {
+                alternateRouteElements.push(
+                  <text
+                    key={`alt-label-${index}`}
+                    x={(startStation.x + endStation.x) / 2}
+                    y={(startStation.y + endStation.y) / 2 + 15}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill="#d97706"
+                    fontWeight="600"
+                  >
+                    🔄 REROUTED VIA {train.alternate_path_stations.join(' → ')}
+                  </text>
+                );
+              }
+            }
+          }
           
           return (
             <g key={`reroute-${index}`}>
-              {/* Enhanced rerouted path with glow effect */}
-              <path
-                d={`M ${train.routeData.path[0].x} ${train.routeData.path[0].y} ${train.routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
-                stroke="#fbbf24"
-                strokeWidth="8"
-                fill="none"
-                opacity="0.3"
-              />
-              <path
-                d={`M ${train.routeData.path[0].x} ${train.routeData.path[0].y} ${train.routeData.path.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
-                stroke="#f59e0b"
-                strokeWidth="4"
-                fill="none"
-                strokeDasharray="6,3"
-                opacity="0.9"
-              />
-              {/* Rerouted route label */}
-              <text
-                x={(train.routeData.path[0].x + train.routeData.path[train.routeData.path.length - 1].x) / 2}
-                y={(train.routeData.path[0].y + train.routeData.path[train.routeData.path.length - 1].y) / 2 + 15}
-                textAnchor="middle"
-                fontSize="9"
-                fill="#d97706"
-                fontWeight="600"
-              >
-                🔄 REROUTED VIA {train.new_route}
-              </text>
+              {alternateRouteElements}
             </g>
           );
         })}
