@@ -565,16 +565,16 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                 
                 if alternate_paths:
                     # Use the first (shortest) alternate path
-                    path = alternate_paths[0]
-                    if len(path) >= 2:
-                        new_route = f"{path[0]}-{path[-1]}"
-                        new_train.rerouted = True
-                        new_train.new_route = new_route
-                        new_train.delay_minutes += 10  # Rerouting adds delay
-                        new_train.status = "rerouted"
-                        new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + 10)
-                        new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + 10)
-                        explanations.append(f"Train {train.id[:6]} rerouted via {' → '.join(path)} due to {route_id} blockage (+10 min delay)")
+                    alt_path = alternate_paths[0]
+                    new_train.rerouted = True
+                    new_train.new_route = alt_path['route_description']
+                    new_train.alternate_path_stations = alt_path['stations']
+                    new_train.alternate_route_segments = alt_path['route_segments']
+                    new_train.delay_minutes += 10  # Rerouting adds delay
+                    new_train.status = "rerouted"
+                    new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + 10)
+                    new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + 10)
+                    explanations.append(f"Train {train.id[:6]} rerouted via {alt_path['path_description']} (routes: {alt_path['route_description']}) due to {route_id} blockage (+10 min delay)")
                 else:
                     # No alternate route - significant delay
                     new_train.delay_minutes += 60
