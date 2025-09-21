@@ -467,52 +467,95 @@ function App() {
                             <TableHead>Train</TableHead>
                             <TableHead>Route</TableHead>
                             <TableHead>Priority</TableHead>
-                            <TableHead>Before ETA</TableHead>
-                            <TableHead>Current ETA</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Before Optimization</TableHead>
+                            <TableHead>After Optimization</TableHead>
+                            <TableHead>Impact</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {optimizedTrains.map((train) => (
-                            <TableRow key={train.id}>
-                              <TableCell className="font-medium">{train.id.slice(0, 6)}</TableCell>
-                              <TableCell>
-                                {train.rerouted ? (
-                                  <span className="text-green-600">
-                                    {train.new_route} <Badge variant="outline" className="ml-1">Rerouted</Badge>
-                                  </span>
-                                ) : (
-                                  train.route
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={getPriorityVariant(train.priority)}>
-                                  {train.priority}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="text-sm">
-                                  <div className="text-gray-600">{formatTime(train.planned_arrival)}</div>
-                                  <div className="text-xs text-gray-400">{formatTime(train.planned_departure)}</div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="text-sm">
-                                  <div className={train.delay_minutes > 0 ? "text-red-600 font-medium" : "text-gray-900"}>
-                                    {formatTime(train.optimized_arrival)}
+                          {optimizedTrains.map((train) => {
+                            // Find the original train to compare
+                            const originalTrain = trains.find(t => t.id === train.id);
+                            const wasOriginallyDelayed = originalTrain && (
+                              // Check if there were conflicts in original schedule that would cause delays
+                              trains.some(other => 
+                                other.id !== train.id && 
+                                other.route === train.route &&
+                                Math.abs(
+                                  (parseInt(other.planned_arrival.split(':')[0]) * 60 + parseInt(other.planned_arrival.split(':')[1])) -
+                                  (parseInt(train.planned_arrival.split(':')[0]) * 60 + parseInt(train.planned_arrival.split(':')[1]))
+                                ) < 15
+                              )
+                            );
+                            
+                            return (
+                              <TableRow key={train.id}>
+                                <TableCell className="font-medium">{train.id.slice(0, 6)}</TableCell>
+                                <TableCell>
+                                  {train.rerouted ? (
+                                    <span className="text-yellow-600">
+                                      {train.new_route} <Badge variant="outline" className="ml-1 border-yellow-500 text-yellow-600">Rerouted</Badge>
+                                    </span>
+                                  ) : (
+                                    train.route
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={getPriorityVariant(train.priority)}>
+                                    {train.priority}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    <div className={wasOriginallyDelayed ? "text-orange-600" : "text-gray-600"}>
+                                      {formatTime(train.planned_arrival)}
+                                    </div>
+                                    <div className={`text-xs ${wasOriginallyDelayed ? "text-orange-500" : "text-gray-400"}`}>
+                                      {formatTime(train.planned_departure)}
+                                    </div>
+                                    {wasOriginallyDelayed && (
+                                      <div className="text-xs text-orange-600 font-medium">Conflict Expected</div>
+                                    )}
                                   </div>
-                                  <div className={`text-xs ${train.delay_minutes > 0 ? "text-red-500" : "text-gray-400"}`}>
-                                    {formatTime(train.optimized_departure)}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    <div className={train.delay_minutes > 0 ? "text-red-600 font-medium" : "text-green-600 font-medium"}>
+                                      {formatTime(train.optimized_arrival)}
+                                    </div>
+                                    <div className={`text-xs ${train.delay_minutes > 0 ? "text-red-500" : "text-green-500"}`}>
+                                      {formatTime(train.optimized_departure)}
+                                    </div>
+                                    <div className={`text-xs font-medium ${train.delay_minutes > 0 ? "text-red-600" : "text-green-600"}`}>
+                                      {train.delay_minutes > 0 ? `Delayed ${train.delay_minutes}m` : "On Schedule"}
+                                    </div>
                                   </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <span className={train.delay_minutes > 0 ? "text-red-600" : "text-green-600"}>
-                                  {train.delay_minutes > 0 ? `+${train.delay_minutes}m` : "On time"}
-                                </span>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {train.delay_minutes === 0 ? (
+                                      <span className="text-green-600 font-medium">✓ Optimized</span>
+                                    ) : wasOriginallyDelayed ? (
+                                      <span className="text-blue-600">
+                                        Conflict Resolved
+                                        <div className="text-xs">+{train.delay_minutes}m managed delay</div>
+                                      </span>
+                                    ) : (
+                                      <span className="text-red-600">
+                                        New Delay
+                                        <div className="text-xs">+{train.delay_minutes}m</div>
+                                      </span>
+                                    )}
+                                    {train.rerouted && (
+                                      <div className="text-xs text-yellow-600 font-medium">
+                                        Smart Rerouting Applied
+                                      </div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     ) : (
