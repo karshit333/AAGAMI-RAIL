@@ -1045,6 +1045,15 @@ class AagamiRailAPITester:
         # Test all disaster types
         self.test_all_disaster_types()
         
+        # ENHANCED REROUTING LOGIC TESTS (Primary Focus)
+        print("\n🔄 ENHANCED REROUTING LOGIC TESTS")
+        print("-" * 40)
+        self.test_enhanced_rerouting_flood_ab()
+        self.test_enhanced_rerouting_different_routes()
+        self.test_alternate_path_response_structure()
+        self.test_no_alternative_scenario()
+        self.test_rerouting_explanation_accuracy()
+        
         # Test performance metrics
         performance = self.test_get_performance_metrics()
         
@@ -1061,6 +1070,13 @@ class AagamiRailAPITester:
             print("  • All disaster types process correctly")
             print("  • Train IDs consistently use TRN001-TRN010 format")
             print("  • Routes include disaster effect fields for map visualization")
+            print("\n🔄 ENHANCED REROUTING LOGIC VERIFIED:")
+            print("  • Flood disaster on A-B route triggers proper alternate path finding")
+            print("  • Alternate paths avoid blocked routes completely")
+            print("  • Response includes alternate_path_stations and alternate_route_segments")
+            print("  • Different blocked routes (B-C, C-D) handled correctly")
+            print("  • No-alternative scenarios result in appropriate delays")
+            print("  • Explanations mention actual alternate paths, not blocked routes")
             return 0
         else:
             print("⚠️  Some tests failed. Check the details above.")
