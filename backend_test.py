@@ -299,7 +299,7 @@ class AagamiRailAPITester:
         return None
 
     def test_apply_disaster_scenario(self, scenarios=None):
-        """Test POST /api/disaster endpoint"""
+        """Test POST /api/disaster endpoint - Enhanced for disaster management testing"""
         try:
             if not scenarios:
                 self.log_test("Apply Disaster Scenario Endpoint", False, "No scenarios available for testing")
@@ -327,32 +327,242 @@ class AagamiRailAPITester:
                     kpis = disaster_result['kpis']
                     explanations = disaster_result['explanations']
                     disaster_summary = disaster_result.get('disaster_summary', '')
+                    optimized_trains = disaster_result['optimized_trains']
+                    
+                    # Check train ID consistency in disaster response
+                    train_id_test_passed = True
+                    train_id_details = []
+                    
+                    for train in optimized_trains:
+                        train_id = train.get('id', '')
+                        if not (train_id.startswith('TRN') and len(train_id) == 6) and not train_id.startswith('EMG'):
+                            train_id_test_passed = False
+                            train_id_details.append(f"Invalid train ID format: '{train_id}'")
                     
                     # Check if disaster had impact
                     rerouted_trains = kpis.get('rerouted_trains', 0)
                     delayed_trains = kpis.get('delayed_trains', 0)
                     
                     if rerouted_trains > 0 or delayed_trains > 0 or len(explanations) > 0:
-                        self.log_test("Apply Disaster Scenario Endpoint", True, 
-                                    f"Disaster applied: {rerouted_trains} rerouted, {delayed_trains} delayed, {len(explanations)} explanations")
+                        if train_id_test_passed:
+                            self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", True, 
+                                        f"Disaster applied: {rerouted_trains} rerouted, {delayed_trains} delayed, {len(explanations)} explanations. Train IDs consistent.")
+                        else:
+                            self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", False, 
+                                        f"Train ID issues: {'; '.join(train_id_details)}")
                         return disaster_result
                     else:
-                        self.log_test("Apply Disaster Scenario Endpoint", False, "Disaster scenario had no visible impact")
+                        self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", False, "Disaster scenario had no visible impact")
                 else:
                     missing_fields = [f for f in required_fields if f not in disaster_result]
-                    self.log_test("Apply Disaster Scenario Endpoint", False, f"Missing fields: {missing_fields}")
+                    self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", False, f"Missing fields: {missing_fields}")
             else:
                 # Get error details for debugging
                 try:
                     error_detail = response.json()
-                    self.log_test("Apply Disaster Scenario Endpoint", False, f"Status code: {response.status_code}, Error: {error_detail}")
+                    self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", False, f"Status code: {response.status_code}, Error: {error_detail}")
                 except:
-                    self.log_test("Apply Disaster Scenario Endpoint", False, f"Status code: {response.status_code}")
+                    self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", False, f"Status code: {response.status_code}")
                 
         except Exception as e:
-            self.log_test("Apply Disaster Scenario Endpoint", False, f"Exception: {str(e)}")
+            self.log_test("Apply Disaster Scenario Endpoint (Train ID Consistency)", False, f"Exception: {str(e)}")
         
         return None
+
+    def test_custom_disaster_without_duration(self):
+        """Test POST /api/disaster/custom endpoint without duration_minutes"""
+        try:
+            # Test custom disaster without duration_minutes field
+            custom_disaster = {
+                "type": "custom",
+                "affected_route": "A-B",
+                "description": "Test custom disaster without duration",
+                "speed_reduction": 0.3,
+                "severity": "medium"
+                # Intentionally omitting duration_minutes to test default behavior
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=custom_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            success = response.status_code == 200
+            
+            if success:
+                disaster_result = response.json()
+                required_fields = ['original_trains', 'optimized_trains', 'kpis', 'explanations']
+                
+                if all(field in disaster_result for field in required_fields):
+                    kpis = disaster_result['kpis']
+                    explanations = disaster_result['explanations']
+                    optimized_trains = disaster_result['optimized_trains']
+                    
+                    # Check if disaster had impact (should work even without duration)
+                    rerouted_trains = kpis.get('rerouted_trains', 0)
+                    delayed_trains = kpis.get('delayed_trains', 0)
+                    
+                    # Check train ID consistency
+                    train_id_test_passed = True
+                    for train in optimized_trains:
+                        train_id = train.get('id', '')
+                        if not (train_id.startswith('TRN') and len(train_id) == 6) and not train_id.startswith('EMG'):
+                            train_id_test_passed = False
+                            break
+                    
+                    if (rerouted_trains > 0 or delayed_trains > 0 or len(explanations) > 0) and train_id_test_passed:
+                        self.log_test("Custom Disaster Without Duration", True, 
+                                    f"Custom disaster worked without duration: {rerouted_trains} rerouted, {delayed_trains} delayed")
+                        return disaster_result
+                    elif not train_id_test_passed:
+                        self.log_test("Custom Disaster Without Duration", False, "Train ID format issues in custom disaster response")
+                    else:
+                        self.log_test("Custom Disaster Without Duration", False, "Custom disaster had no visible impact")
+                else:
+                    missing_fields = [f for f in required_fields if f not in disaster_result]
+                    self.log_test("Custom Disaster Without Duration", False, f"Missing fields: {missing_fields}")
+            else:
+                try:
+                    error_detail = response.json()
+                    self.log_test("Custom Disaster Without Duration", False, f"Status code: {response.status_code}, Error: {error_detail}")
+                except:
+                    self.log_test("Custom Disaster Without Duration", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Custom Disaster Without Duration", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_emergency_train_insertion(self):
+        """Test emergency train insertion functionality"""
+        try:
+            # Test emergency train disaster scenario
+            emergency_scenario = {
+                "disasters": [
+                    {
+                        "type": "emergency_train",
+                        "description": "Emergency train requires immediate priority",
+                        "severity": "critical",
+                        "affected_route": "A-B"
+                    }
+                ],
+                "description": "Emergency train insertion test"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster", 
+                json=emergency_scenario,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            success = response.status_code == 200
+            
+            if success:
+                disaster_result = response.json()
+                optimized_trains = disaster_result.get('optimized_trains', [])
+                
+                # Check if emergency train was inserted
+                emergency_train_found = False
+                for train in optimized_trains:
+                    if train.get('id', '').startswith('EMG'):
+                        emergency_train_found = True
+                        break
+                
+                # Check train ID consistency
+                train_id_test_passed = True
+                for train in optimized_trains:
+                    train_id = train.get('id', '')
+                    if not (train_id.startswith('TRN') and len(train_id) == 6) and not train_id.startswith('EMG'):
+                        train_id_test_passed = False
+                        break
+                
+                if emergency_train_found and train_id_test_passed:
+                    self.log_test("Emergency Train Insertion", True, 
+                                f"Emergency train successfully inserted. Total trains: {len(optimized_trains)}")
+                    return disaster_result
+                elif not emergency_train_found:
+                    self.log_test("Emergency Train Insertion", False, "Emergency train was not inserted")
+                else:
+                    self.log_test("Emergency Train Insertion", False, "Train ID format issues with emergency train")
+            else:
+                try:
+                    error_detail = response.json()
+                    self.log_test("Emergency Train Insertion", False, f"Status code: {response.status_code}, Error: {error_detail}")
+                except:
+                    self.log_test("Emergency Train Insertion", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Emergency Train Insertion", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_all_disaster_types(self):
+        """Test all disaster types to ensure they process correctly"""
+        disaster_types = [
+            {"type": "flood", "affected_route": "A-B", "duration_minutes": 60, "description": "Test flood"},
+            {"type": "equipment_failure", "affected_route": "B-C", "duration_minutes": 30, "description": "Test equipment failure"},
+            {"type": "weather", "affected_route": "all", "speed_reduction": 0.4, "description": "Test weather"},
+            {"type": "breakdown", "affected_route": "C-D", "duration_minutes": 15, "description": "Test breakdown"},
+            {"type": "human_strike", "affected_route": "all", "speed_reduction": 0.6, "duration_minutes": 120, "description": "Test strike"},
+            {"type": "emergency_train", "description": "Test emergency train", "affected_route": "A-B"}
+        ]
+        
+        all_passed = True
+        results = []
+        
+        for disaster_data in disaster_types:
+            try:
+                scenario = {
+                    "disasters": [disaster_data],
+                    "description": f"Test {disaster_data['type']} disaster"
+                }
+                
+                response = requests.post(
+                    f"{self.api_url}/disaster", 
+                    json=scenario,
+                    headers={'Content-Type': 'application/json'},
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    disaster_result = response.json()
+                    kpis = disaster_result.get('kpis', {})
+                    optimized_trains = disaster_result.get('optimized_trains', [])
+                    
+                    # Check train ID consistency
+                    train_id_consistent = all(
+                        (train.get('id', '').startswith('TRN') and len(train.get('id', '')) == 6) or 
+                        train.get('id', '').startswith('EMG')
+                        for train in optimized_trains
+                    )
+                    
+                    # Check if disaster had some impact
+                    has_impact = (
+                        kpis.get('rerouted_trains', 0) > 0 or 
+                        kpis.get('delayed_trains', 0) > 0 or
+                        len(disaster_result.get('explanations', [])) > 0
+                    )
+                    
+                    if train_id_consistent and has_impact:
+                        results.append(f"✅ {disaster_data['type']}: OK")
+                    else:
+                        results.append(f"❌ {disaster_data['type']}: {'ID issues' if not train_id_consistent else 'No impact'}")
+                        all_passed = False
+                else:
+                    results.append(f"❌ {disaster_data['type']}: HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                results.append(f"❌ {disaster_data['type']}: Exception {str(e)}")
+                all_passed = False
+        
+        if all_passed:
+            self.log_test("All Disaster Types Processing", True, f"All 6 disaster types work correctly: {'; '.join(results)}")
+        else:
+            self.log_test("All Disaster Types Processing", False, f"Some disaster types failed: {'; '.join(results)}")
+        
+        return all_passed
 
     def test_get_performance_metrics(self):
         """Test GET /api/performance endpoint"""
