@@ -7,15 +7,26 @@ const TrainMap = ({ stations, routes, trains, getPriorityColor, onTrainClick }) 
     // Initialize train positions for animation
     if (trains && routes) {
       const trainPositions = trains.map((train, index) => {
-        const routeId = train.rerouted ? train.new_route : train.route;
-        const routeData = routes.find(r => r.id === routeId);
+        let routeData = null;
+        let actualRoute = train.route;
+        
+        if (train.rerouted && train.alternate_route_segments && train.alternate_route_segments.length > 0) {
+          // For rerouted trains, use the first segment of the alternate route for animation
+          const firstAlternateSegment = train.alternate_route_segments[0];
+          routeData = routes.find(r => r.id === firstAlternateSegment);
+          actualRoute = firstAlternateSegment;
+        } else {
+          // For normal trains, use their original route
+          routeData = routes.find(r => r.id === train.route);
+        }
         
         return {
           ...train,
           position: { x: 0, y: 0 },
           progress: (index * 0.1) % 1, // Stagger initial positions
           routeData: routeData,
-          actualRoute: routeId
+          actualRoute: actualRoute,
+          isUsingAlternateRoute: train.rerouted && train.alternate_route_segments && train.alternate_route_segments.length > 0
         };
       });
       setAnimatedTrains(trainPositions);
