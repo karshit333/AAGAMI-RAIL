@@ -106,28 +106,28 @@
 
 ## frontend:
   - task: "Update AI optimized schedule table to show both original ETA and current (optimized) ETA"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-        -working: "NA"
+        -working: true
         -agent: "main"
-        -comment: "Task identified - need to modify optimized schedule table to show before and after ETAs"
+        -comment: "Modified optimized schedule table to show 'Before ETA' and 'Current ETA' columns with original and optimized times"
 
   - task: "Remove duration field from AI-Powered Disruption Designer"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/frontend/src/components/AdvancedDisasterManager.js"
     stuck_count: 0
     priority: "medium"
     needs_retesting: true
     status_history:
-        -working: "NA"
+        -working: true
         -agent: "main"
-        -comment: "Task identified - need to remove duration slider from disaster form"
+        -comment: "Removed duration slider from form, updated form state, and added default 30-minute duration for backend processing"
 
   - task: "Ensure disaster effects (blocked routes, rerouted trains) reflect on map view"
     implemented: true
