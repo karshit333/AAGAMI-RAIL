@@ -85,15 +85,6 @@ const AdvancedDisasterManager = ({
     }
   }, [customForm.type, customForm.affected_route]);
 
-  // Custom disaster form state
-  const [originalCustomForm] = useState({
-    type: 'custom',
-    affected_route: '',
-    description: '',
-    speed_reduction: 0,
-    severity: 'medium'
-  });
-
   const disasterTypes = [
     { value: 'flood', label: 'Track Flooding', icon: '🌊', description: 'Water logging blocks railway tracks' },
     { value: 'equipment_failure', label: 'Signal Failure', icon: '⚠️', description: 'Equipment malfunction disrupts operations' },
