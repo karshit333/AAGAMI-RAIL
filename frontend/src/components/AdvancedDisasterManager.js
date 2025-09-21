@@ -408,16 +408,34 @@ const AdvancedDisasterManager = ({
 
           {/* Description */}
           <div>
-            <label className="text-sm font-medium mb-2 block">
-              {customForm.type === 'emergency_train' ? 'Emergency Details' : 'Disruption Description'}
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium">
+                {customForm.type === 'emergency_train' ? 'Emergency Details' : 'Disruption Description'}
+              </label>
+              {customForm.type !== 'emergency_train' && customForm.affected_route && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const suggestion = generateDisasterDescription(customForm.type, customForm.affected_route);
+                    setCustomForm({...customForm, description: suggestion});
+                  }}
+                  className="text-xs"
+                >
+                  Auto-Suggest
+                </Button>
+              )}
+            </div>
             <Textarea
               value={customForm.description}
               onChange={(e) => setCustomForm({...customForm, description: e.target.value})}
               placeholder={
                 customForm.type === 'emergency_train' 
                   ? "Describe the emergency situation requiring immediate train dispatch..."
-                  : "Describe the specific operational disruption..."
+                  : customForm.affected_route
+                    ? `AI Suggestion available - click "Auto-Suggest" or describe the disruption on ${customForm.affected_route}...`
+                    : "Describe the specific operational disruption..."
               }
               className="min-h-[80px]"
             />
