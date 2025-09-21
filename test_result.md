@@ -153,6 +153,57 @@
         -working: true
         -agent: "main"
         -comment: "Backend already uses TRN001-TRN010 format in SAMPLE_TRAINS (lines 231-241)"
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: All API endpoints (/api/trains, /api/optimize, /api/disaster) consistently return trains with TRN001-TRN010 format. Emergency trains use EMG001 format as expected."
+
+  - task: "Train Schedule API returns both original and optimized ETAs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: /api/optimize endpoint returns both planned_arrival/planned_departure (original ETA) and optimized_arrival/optimized_departure (current ETA) for all trains. Frontend can display 'Before ETA' vs 'Current ETA' correctly."
+
+  - task: "Custom disasters work without requiring duration_minutes"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: /api/disaster/custom endpoint accepts custom disasters without duration_minutes field and applies default 30-minute duration. Backend processes all disaster types (flood, equipment_failure, weather, breakdown, human_strike, emergency_train) correctly."
+
+  - task: "Emergency train insertion functions properly"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: Emergency train disaster type successfully inserts EMG001 train with high priority. Total train count increases from 10 to 11, and all other trains are rescheduled appropriately."
+
+  - task: "Route and map data includes disaster effects"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: /api/routes endpoint includes 'blocked' and 'speed_reduction' fields for all routes. /api/stations endpoint provides coordinate data. Disaster effects (blocked routes, speed reductions) are properly reflected for map visualization."
 
 ## metadata:
   created_by: "main_agent"
