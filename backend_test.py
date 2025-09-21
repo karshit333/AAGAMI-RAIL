@@ -588,6 +588,402 @@ class AagamiRailAPITester:
         
         return all_passed
 
+    def test_enhanced_rerouting_flood_ab(self):
+        """Test enhanced rerouting logic for flood disaster on A-B route"""
+        try:
+            # Create flood disaster that completely blocks A-B route
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-B",
+                "duration_minutes": 120,
+                "description": "Heavy rainfall floods A-B section causing complete blockage",
+                "severity": "high",
+                "speed_reduction": 0.0  # Complete blockage
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                
+                # Find trains originally on A-B route
+                ab_trains = [train for train in optimized_trains if train.get('route') == 'A-B']
+                
+                rerouting_test_passed = True
+                rerouting_details = []
+                
+                for train in ab_trains:
+                    train_id = train.get('id', '')[:6]
+                    
+                    # Check if train was rerouted
+                    if train.get('rerouted', False):
+                        # Verify alternate path fields are present
+                        alt_path_stations = train.get('alternate_path_stations', [])
+                        alt_route_segments = train.get('alternate_route_segments', [])
+                        new_route = train.get('new_route', '')
+                        
+                        if not alt_path_stations:
+                            rerouting_test_passed = False
+                            rerouting_details.append(f"Train {train_id}: Missing alternate_path_stations")
+                        elif not alt_route_segments:
+                            rerouting_test_passed = False
+                            rerouting_details.append(f"Train {train_id}: Missing alternate_route_segments")
+                        elif not new_route:
+                            rerouting_test_passed = False
+                            rerouting_details.append(f"Train {train_id}: Missing new_route description")
+                        else:
+                            # Verify the alternate path makes sense (A to B via other stations)
+                            if len(alt_path_stations) >= 2 and alt_path_stations[0] == 'A' and alt_path_stations[-1] == 'B':
+                                # Verify route doesn't include blocked A-B
+                                if 'A-B' not in alt_route_segments:
+                                    rerouting_details.append(f"✅ Train {train_id}: Properly rerouted via {' → '.join(alt_path_stations)} using routes {' → '.join(alt_route_segments)}")
+                                else:
+                                    rerouting_test_passed = False
+                                    rerouting_details.append(f"Train {train_id}: ERROR - Rerouted via blocked A-B route!")
+                            else:
+                                rerouting_test_passed = False
+                                rerouting_details.append(f"Train {train_id}: Invalid alternate path {alt_path_stations}")
+                    else:
+                        # Train not rerouted - should have significant delay instead
+                        delay = train.get('delay_minutes', 0)
+                        if delay >= 30:  # Acceptable if given significant delay
+                            rerouting_details.append(f"⚠️ Train {train_id}: Not rerouted but given {delay}min delay")
+                        else:
+                            rerouting_test_passed = False
+                            rerouting_details.append(f"Train {train_id}: Not rerouted and insufficient delay ({delay}min)")
+                
+                if rerouting_test_passed and len(ab_trains) > 0:
+                    self.log_test("Enhanced Rerouting - Flood A-B Route", True, 
+                                f"All {len(ab_trains)} A-B trains properly handled: {'; '.join(rerouting_details)}")
+                    return result
+                elif len(ab_trains) == 0:
+                    self.log_test("Enhanced Rerouting - Flood A-B Route", False, "No trains found on A-B route to test")
+                else:
+                    self.log_test("Enhanced Rerouting - Flood A-B Route", False, 
+                                f"Rerouting issues: {'; '.join(rerouting_details)}")
+            else:
+                self.log_test("Enhanced Rerouting - Flood A-B Route", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Enhanced Rerouting - Flood A-B Route", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_enhanced_rerouting_different_routes(self):
+        """Test rerouting logic for different blocked routes (B-C, C-D)"""
+        test_routes = [
+            {"route": "B-C", "expected_alternates": ["B-E-D-C", "B-A-C"]},
+            {"route": "C-D", "expected_alternates": ["C-B-E-D", "C-A-E-D"]}
+        ]
+        
+        all_passed = True
+        results = []
+        
+        for test_case in test_routes:
+            try:
+                blocked_route = test_case["route"]
+                
+                # Create flood disaster for this route
+                flood_disaster = {
+                    "type": "flood",
+                    "affected_route": blocked_route,
+                    "duration_minutes": 90,
+                    "description": f"Flood blocks {blocked_route} route",
+                    "severity": "high"
+                }
+                
+                response = requests.post(
+                    f"{self.api_url}/disaster/custom", 
+                    json=flood_disaster,
+                    headers={'Content-Type': 'application/json'},
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    optimized_trains = result.get('optimized_trains', [])
+                    
+                    # Find trains originally on this route
+                    affected_trains = [train for train in optimized_trains if train.get('route') == blocked_route]
+                    
+                    route_test_passed = True
+                    route_details = []
+                    
+                    for train in affected_trains:
+                        train_id = train.get('id', '')[:6]
+                        
+                        if train.get('rerouted', False):
+                            alt_route_segments = train.get('alternate_route_segments', [])
+                            
+                            # Verify blocked route is not in alternate segments
+                            if blocked_route not in alt_route_segments:
+                                route_details.append(f"✅ Train {train_id}: Avoids blocked {blocked_route}")
+                            else:
+                                route_test_passed = False
+                                route_details.append(f"❌ Train {train_id}: Uses blocked route {blocked_route}!")
+                        else:
+                            # Check if given appropriate delay
+                            delay = train.get('delay_minutes', 0)
+                            if delay >= 30:
+                                route_details.append(f"⚠️ Train {train_id}: {delay}min delay instead of rerouting")
+                            else:
+                                route_test_passed = False
+                                route_details.append(f"❌ Train {train_id}: No rerouting, insufficient delay")
+                    
+                    if route_test_passed:
+                        results.append(f"✅ {blocked_route}: {len(affected_trains)} trains handled correctly")
+                    else:
+                        results.append(f"❌ {blocked_route}: Issues found")
+                        all_passed = False
+                        
+                else:
+                    results.append(f"❌ {blocked_route}: HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                results.append(f"❌ {blocked_route}: Exception {str(e)}")
+                all_passed = False
+        
+        if all_passed:
+            self.log_test("Enhanced Rerouting - Different Blocked Routes", True, 
+                        f"All route blockages handled correctly: {'; '.join(results)}")
+        else:
+            self.log_test("Enhanced Rerouting - Different Blocked Routes", False, 
+                        f"Some route blockages failed: {'; '.join(results)}")
+        
+        return all_passed
+
+    def test_alternate_path_response_structure(self):
+        """Test that response includes proper alternate path structure"""
+        try:
+            # Create a flood disaster to trigger rerouting
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-B",
+                "duration_minutes": 60,
+                "description": "Test alternate path response structure",
+                "severity": "high"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                
+                structure_test_passed = True
+                structure_details = []
+                
+                # Find rerouted trains
+                rerouted_trains = [train for train in optimized_trains if train.get('rerouted', False)]
+                
+                if len(rerouted_trains) == 0:
+                    self.log_test("Alternate Path Response Structure", False, "No rerouted trains found to test structure")
+                    return None
+                
+                for train in rerouted_trains:
+                    train_id = train.get('id', '')[:6]
+                    
+                    # Check required fields
+                    required_fields = ['alternate_path_stations', 'alternate_route_segments', 'new_route']
+                    missing_fields = []
+                    
+                    for field in required_fields:
+                        if field not in train or not train[field]:
+                            missing_fields.append(field)
+                    
+                    if missing_fields:
+                        structure_test_passed = False
+                        structure_details.append(f"Train {train_id}: Missing {', '.join(missing_fields)}")
+                    else:
+                        # Validate field types and content
+                        alt_stations = train['alternate_path_stations']
+                        alt_segments = train['alternate_route_segments']
+                        new_route = train['new_route']
+                        
+                        if not isinstance(alt_stations, list) or len(alt_stations) < 2:
+                            structure_test_passed = False
+                            structure_details.append(f"Train {train_id}: Invalid alternate_path_stations")
+                        elif not isinstance(alt_segments, list) or len(alt_segments) < 1:
+                            structure_test_passed = False
+                            structure_details.append(f"Train {train_id}: Invalid alternate_route_segments")
+                        elif not isinstance(new_route, str) or len(new_route) < 3:
+                            structure_test_passed = False
+                            structure_details.append(f"Train {train_id}: Invalid new_route description")
+                        else:
+                            structure_details.append(f"✅ Train {train_id}: Complete structure - stations: {alt_stations}, segments: {alt_segments}")
+                
+                if structure_test_passed:
+                    self.log_test("Alternate Path Response Structure", True, 
+                                f"All {len(rerouted_trains)} rerouted trains have complete structure: {'; '.join(structure_details)}")
+                    return result
+                else:
+                    self.log_test("Alternate Path Response Structure", False, 
+                                f"Structure issues found: {'; '.join(structure_details)}")
+            else:
+                self.log_test("Alternate Path Response Structure", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Alternate Path Response Structure", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_no_alternative_scenario(self):
+        """Test scenario where no alternate route exists"""
+        try:
+            # This is tricky to test with current network topology since there are multiple alternate routes
+            # We'll test by creating multiple simultaneous disasters to block most routes
+            multiple_disasters = {
+                "disasters": [
+                    {"type": "flood", "affected_route": "A-B", "duration_minutes": 60, "description": "Flood blocks A-B"},
+                    {"type": "breakdown", "affected_route": "A-C", "duration_minutes": 45, "description": "Breakdown blocks A-C"},
+                    {"type": "equipment_failure", "affected_route": "A-E", "duration_minutes": 30, "description": "Signal failure blocks A-E"}
+                ],
+                "description": "Multiple disasters blocking most alternate routes",
+                "multiple": True
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster", 
+                json=multiple_disasters,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                
+                # Find trains that should be affected (originally on blocked routes)
+                affected_trains = [train for train in optimized_trains 
+                                 if train.get('route') in ['A-B', 'A-C', 'A-E']]
+                
+                no_alt_test_passed = True
+                no_alt_details = []
+                
+                for train in affected_trains:
+                    train_id = train.get('id', '')[:6]
+                    delay = train.get('delay_minutes', 0)
+                    
+                    if train.get('rerouted', False):
+                        # If rerouted, check that it's a valid alternate
+                        alt_segments = train.get('alternate_route_segments', [])
+                        blocked_routes = ['A-B', 'A-C', 'A-E']
+                        
+                        uses_blocked = any(blocked in alt_segments for blocked in blocked_routes)
+                        if uses_blocked:
+                            no_alt_test_passed = False
+                            no_alt_details.append(f"Train {train_id}: Rerouted via blocked route!")
+                        else:
+                            no_alt_details.append(f"✅ Train {train_id}: Found valid alternate route")
+                    else:
+                        # Not rerouted - should have significant delay
+                        if delay >= 45:  # Significant delay expected when no alternatives
+                            no_alt_details.append(f"✅ Train {train_id}: Given {delay}min delay (no alternate route)")
+                        else:
+                            no_alt_test_passed = False
+                            no_alt_details.append(f"Train {train_id}: Insufficient delay ({delay}min) for no-alternate scenario")
+                
+                if no_alt_test_passed:
+                    self.log_test("No Alternative Route Scenario", True, 
+                                f"Multiple disasters handled correctly: {'; '.join(no_alt_details)}")
+                    return result
+                else:
+                    self.log_test("No Alternative Route Scenario", False, 
+                                f"Issues with no-alternative handling: {'; '.join(no_alt_details)}")
+            else:
+                self.log_test("No Alternative Route Scenario", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("No Alternative Route Scenario", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_rerouting_explanation_accuracy(self):
+        """Test that explanations mention actual alternate paths, not blocked routes"""
+        try:
+            # Create flood disaster on A-B
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-B",
+                "duration_minutes": 90,
+                "description": "Test explanation accuracy for rerouting",
+                "severity": "high"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                explanations = result.get('explanations', [])
+                optimized_trains = result.get('optimized_trains', [])
+                
+                explanation_test_passed = True
+                explanation_details = []
+                
+                # Find rerouted trains
+                rerouted_trains = [train for train in optimized_trains if train.get('rerouted', False)]
+                
+                if len(rerouted_trains) == 0:
+                    self.log_test("Rerouting Explanation Accuracy", False, "No rerouted trains to test explanations")
+                    return None
+                
+                # Check explanations for accuracy
+                for explanation in explanations:
+                    explanation_text = explanation.lower()
+                    
+                    # Should NOT mention rerouting "via A-B" when A-B is blocked
+                    if "via a-b" in explanation_text and "rerouted" in explanation_text:
+                        explanation_test_passed = False
+                        explanation_details.append(f"❌ Explanation mentions rerouting via blocked A-B: '{explanation[:100]}...'")
+                    
+                    # Should mention actual alternate paths
+                    if "rerouted" in explanation_text:
+                        if any(alt_path in explanation_text for alt_path in ["a → c → b", "a-c", "c-b"]):
+                            explanation_details.append(f"✅ Explanation mentions valid alternate path")
+                        else:
+                            explanation_details.append(f"⚠️ Rerouting explanation lacks specific path details")
+                
+                # Check individual train explanations
+                for train in rerouted_trains:
+                    train_id = train.get('id', '')[:6]
+                    alt_path = train.get('alternate_path_stations', [])
+                    
+                    if len(alt_path) >= 2:
+                        path_description = ' → '.join(alt_path)
+                        explanation_details.append(f"✅ Train {train_id}: Alternate path {path_description}")
+                
+                if explanation_test_passed:
+                    self.log_test("Rerouting Explanation Accuracy", True, 
+                                f"Explanations are accurate: {'; '.join(explanation_details)}")
+                    return result
+                else:
+                    self.log_test("Rerouting Explanation Accuracy", False, 
+                                f"Explanation issues: {'; '.join(explanation_details)}")
+            else:
+                self.log_test("Rerouting Explanation Accuracy", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Rerouting Explanation Accuracy", False, f"Exception: {str(e)}")
+        
+        return None
+
     def test_get_performance_metrics(self):
         """Test GET /api/performance endpoint"""
         try:
