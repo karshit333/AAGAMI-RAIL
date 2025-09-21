@@ -111,23 +111,29 @@
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "Modified optimized schedule table to show 'Before ETA' and 'Current ETA' columns with original and optimized times"
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: Enhanced schedule table successfully displays 'Before Optimization', 'After Optimization', and 'Impact' columns. Train status indicators show 'Conflict Expected' vs 'On Schedule' correctly. All trains display original vs optimized times with proper impact analysis."
 
   - task: "Remove duration field from AI-Powered Disruption Designer"
-    implemented: true
-    working: true
+    implemented: false
+    working: false
     file: "/app/frontend/src/components/AdvancedDisasterManager.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "Removed duration slider from form, updated form state, and added default 30-minute duration for backend processing"
+        -working: false
+        -agent: "testing"
+        -comment: "FAILED: Speed Reduction field (slider) is still present in the disaster form. The requirement was to remove the duration field completely, but the Speed Reduction slider with 0-100% range is still visible and functional. This contradicts the requirement to remove duration-related fields."
 
   - task: "Ensure disaster effects (blocked routes, rerouted trains) reflect on map view"
     implemented: true
@@ -140,6 +146,33 @@
         -working: true
         -agent: "main"
         -comment: "Map already handles blocked routes (red dashed), rerouted paths (green), and speed reductions (yellow). Disaster effects should reflect properly"
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: Disaster effects properly reflect on map view. Created flood disaster on A-B route shows blocked routes as solid black lines with 'BLOCKED' indicators. Rerouted trains display yellow dashed paths with 'REROUTED VIA' labels. Map legend correctly shows Normal (gray dashed), Blocked (solid black), Speed Reduced (yellow dashed), and Rerouted (yellow dashed) route statuses."
+
+  - task: "Auto-description functionality for disaster types and routes"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/AdvancedDisasterManager.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: Auto-description functionality works perfectly for all disaster types (flood, equipment_failure, weather, breakdown, human_strike). Descriptions auto-populate when disaster type and route are selected. Auto-Suggest button provides contextual suggestions. All disaster types generate appropriate descriptions based on route selection."
+
+  - task: "Enhanced map visualization with improved train animations and legend"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/TrainMap.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "VERIFIED: Map visualization is enhanced with larger train circles, better labels, animated trains with TRN001-TRN010 IDs, comprehensive legend showing train priorities (High/Medium/Low) and route statuses (Normal/Blocked/Speed Reduced/Rerouted), and network status panel displaying stations, routes, active trains, blocked routes, and speed restricted routes."
 
 ## backend:
   - task: "Ensure train IDs are consistent TRN001-TRN010 format"
