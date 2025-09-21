@@ -467,8 +467,8 @@ function App() {
                             <TableHead>Train</TableHead>
                             <TableHead>Route</TableHead>
                             <TableHead>Priority</TableHead>
-                            <TableHead>Arrival</TableHead>
-                            <TableHead>Departure</TableHead>
+                            <TableHead>Before ETA</TableHead>
+                            <TableHead>Current ETA</TableHead>
                             <TableHead>Status</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -490,8 +490,22 @@ function App() {
                                   {train.priority}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{formatTime(train.optimized_arrival)}</TableCell>
-                              <TableCell>{formatTime(train.optimized_departure)}</TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  <div className="text-gray-600">{formatTime(train.planned_arrival)}</div>
+                                  <div className="text-xs text-gray-400">{formatTime(train.planned_departure)}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  <div className={train.delay_minutes > 0 ? "text-red-600 font-medium" : "text-gray-900"}>
+                                    {formatTime(train.optimized_arrival)}
+                                  </div>
+                                  <div className={`text-xs ${train.delay_minutes > 0 ? "text-red-500" : "text-gray-400"}`}>
+                                    {formatTime(train.optimized_departure)}
+                                  </div>
+                                </div>
+                              </TableCell>
                               <TableCell>
                                 <span className={train.delay_minutes > 0 ? "text-red-600" : "text-green-600"}>
                                   {train.delay_minutes > 0 ? `+${train.delay_minutes}m` : "On time"}
