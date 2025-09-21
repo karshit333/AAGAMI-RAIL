@@ -455,14 +455,10 @@ const AdvancedDisasterManager = ({
                         </Badge>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-sm text-gray-600 mb-2">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600 mb-2">
                         <div className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
                           Route: {disaster.affected_route}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Duration: {disaster.duration_minutes}m
                         </div>
                         <div className="flex items-center gap-1">
                           <Zap className="h-3 w-3" />
