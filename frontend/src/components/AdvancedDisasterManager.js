@@ -138,24 +138,27 @@ const AdvancedDisasterManager = ({
     let affectedTrains = 0;
     let reroutingNeeded = false;
 
+    // Use default duration of 30 minutes if not specified
+    const duration = disaster.duration_minutes || 30;
+
     switch (disaster.severity) {
       case 'critical':
-        predictedDelays = 45 + (disaster.duration_minutes * 0.8);
+        predictedDelays = 45 + (duration * 0.8);
         affectedTrains = 8;
         reroutingNeeded = true;
         break;
       case 'high':
-        predictedDelays = 25 + (disaster.duration_minutes * 0.6);
+        predictedDelays = 25 + (duration * 0.6);
         affectedTrains = 5;
         reroutingNeeded = disaster.speed_reduction > 0.5;
         break;
       case 'medium':
-        predictedDelays = 15 + (disaster.duration_minutes * 0.4);
+        predictedDelays = 15 + (duration * 0.4);
         affectedTrains = 3;
         reroutingNeeded = disaster.speed_reduction > 0.7;
         break;
       case 'low':
-        predictedDelays = 5 + (disaster.duration_minutes * 0.2);
+        predictedDelays = 5 + (duration * 0.2);
         affectedTrains = 1;
         reroutingNeeded = false;
         break;
