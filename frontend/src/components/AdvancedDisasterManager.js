@@ -359,7 +359,7 @@ const AdvancedDisasterManager = ({
 
           {/* Severity Level - Modified for Emergency Train */}
           {customForm.type !== 'emergency_train' && (
-            <div className="w-full md:w-1/2">
+            <div className="w-full">
               <label className="text-sm font-medium mb-2 block">Severity Level</label>
               <Select 
                 value={customForm.severity} 
@@ -385,26 +385,7 @@ const AdvancedDisasterManager = ({
             </div>
           )}
 
-          {/* Speed Impact - Hide for Emergency Train */}
-          {customForm.type !== 'emergency_train' && (
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Speed Reduction: {Math.round(customForm.speed_reduction * 100)}%
-              </label>
-              <Slider
-                value={[customForm.speed_reduction]}
-                onValueChange={([value]) => setCustomForm({...customForm, speed_reduction: value})}
-                max={1.0}
-                min={0.0}
-                step={0.1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>No speed impact</span>
-                <span>Complete track blockage</span>
-              </div>
-            </div>
-          )}
+          {/* Speed Impact section removed - handled automatically by backend based on disaster type and severity */}
 
           {/* Description */}
           <div>
