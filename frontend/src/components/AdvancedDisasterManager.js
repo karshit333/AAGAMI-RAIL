@@ -530,7 +530,7 @@ const AdvancedDisasterManager = ({
                         </div>
                         <div className="flex items-center gap-1">
                           <Zap className="h-3 w-3" />
-                          Speed Impact: -{Math.round(disaster.speed_reduction * 100)}%
+                          Auto Speed Impact: -{Math.round(disaster.speed_reduction * 100)}%
                         </div>
                         <div className="flex items-center gap-1">
                           <TrendingUp className="h-3 w-3" />
