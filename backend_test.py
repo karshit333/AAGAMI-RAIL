@@ -297,9 +297,9 @@ class AagamiRailAPITester:
             
             if success:
                 scenarios = response.json()
-                if isinstance(scenarios, dict) and len(scenarios) == 5:
+                if isinstance(scenarios, dict) and len(scenarios) == 7:
                     # Check for expected scenario keys
-                    expected_keys = {'flood_ab', 'equipment_failure', 'weather_slow', 'vip_train', 'breakdown_ce'}
+                    expected_keys = {'flood_ab', 'equipment_failure', 'weather_slow', 'emergency_train', 'breakdown_ce', 'human_strike', 'multiple_disasters'}
                     scenario_keys = set(scenarios.keys())
                     
                     if scenario_keys == expected_keys:
@@ -313,7 +313,7 @@ class AagamiRailAPITester:
                     else:
                         self.log_test("Get Disaster Scenarios Endpoint", False, f"Invalid scenario keys: {scenario_keys}")
                 else:
-                    self.log_test("Get Disaster Scenarios Endpoint", False, f"Expected 5 scenarios, got {len(scenarios) if isinstance(scenarios, dict) else 'non-dict'}")
+                    self.log_test("Get Disaster Scenarios Endpoint", False, f"Expected 7 scenarios, got {len(scenarios) if isinstance(scenarios, dict) else 'non-dict'}")
             else:
                 self.log_test("Get Disaster Scenarios Endpoint", False, f"Status code: {response.status_code}")
                 
