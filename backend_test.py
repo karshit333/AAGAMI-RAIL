@@ -188,7 +188,7 @@ class AagamiRailAPITester:
         return None
 
     def test_optimize_trains(self, trains=None):
-        """Test POST /api/optimize endpoint"""
+        """Test POST /api/optimize endpoint - Enhanced for ETA testing"""
         try:
             # Use sample trains if none provided
             payload = trains if trains else None
@@ -210,6 +210,31 @@ class AagamiRailAPITester:
                     optimized_trains = optimization_result['optimized_trains']
                     kpis = optimization_result['kpis']
                     
+                    # CRITICAL TEST: Check for both original and optimized times
+                    eta_test_passed = True
+                    eta_details = []
+                    
+                    for i, (original, optimized) in enumerate(zip(original_trains, optimized_trains)):
+                        # Check that original train has planned times
+                        if not (original.get('planned_arrival') and original.get('planned_departure')):
+                            eta_test_passed = False
+                            eta_details.append(f"Train {i}: Missing planned times in original")
+                        
+                        # Check that optimized train has both planned AND optimized times
+                        if not (optimized.get('planned_arrival') and optimized.get('planned_departure')):
+                            eta_test_passed = False
+                            eta_details.append(f"Train {i}: Missing planned times in optimized")
+                        
+                        if not (optimized.get('optimized_arrival') and optimized.get('optimized_departure')):
+                            eta_test_passed = False
+                            eta_details.append(f"Train {i}: Missing optimized times")
+                        
+                        # Check train ID format (TRN001-TRN010)
+                        train_id = optimized.get('id', '')
+                        if not (train_id.startswith('TRN') and len(train_id) == 6):
+                            eta_test_passed = False
+                            eta_details.append(f"Train {i}: Invalid ID format '{train_id}' (expected TRN001-TRN010)")
+                    
                     # Validate KPIs structure
                     required_kpi_fields = ['total_trains', 'avg_delay_minutes', 'on_time_trains']
                     if all(field in kpis for field in required_kpi_fields):
@@ -218,23 +243,25 @@ class AagamiRailAPITester:
                         on_time_trains = kpis['on_time_trains']
                         avg_delay = kpis['avg_delay_minutes']
                         
-                        if total_trains == 10:  # Expected number of trains
-                            self.log_test("Optimize Trains Endpoint", True, 
-                                        f"KPIs: {total_trains} trains, {on_time_trains} on-time, {avg_delay}min avg delay")
+                        if total_trains == 10 and eta_test_passed:  # Expected number of trains
+                            self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", True, 
+                                        f"KPIs: {total_trains} trains, {on_time_trains} on-time, {avg_delay}min avg delay. All trains have both original and optimized ETAs with correct TRN format")
                             return optimization_result
+                        elif not eta_test_passed:
+                            self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", False, f"ETA/ID issues: {'; '.join(eta_details)}")
                         else:
-                            self.log_test("Optimize Trains Endpoint", False, f"Expected 10 trains, got {total_trains}")
+                            self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", False, f"Expected 10 trains, got {total_trains}")
                     else:
                         missing_kpi_fields = [f for f in required_kpi_fields if f not in kpis]
-                        self.log_test("Optimize Trains Endpoint", False, f"Missing KPI fields: {missing_kpi_fields}")
+                        self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", False, f"Missing KPI fields: {missing_kpi_fields}")
                 else:
                     missing_fields = [f for f in required_fields if f not in optimization_result]
-                    self.log_test("Optimize Trains Endpoint", False, f"Missing fields: {missing_fields}")
+                    self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", False, f"Missing fields: {missing_fields}")
             else:
-                self.log_test("Optimize Trains Endpoint", False, f"Status code: {response.status_code}")
+                self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", False, f"Status code: {response.status_code}")
                 
         except Exception as e:
-            self.log_test("Optimize Trains Endpoint", False, f"Exception: {str(e)}")
+            self.log_test("Optimize Trains Endpoint (ETA & Train ID Format)", False, f"Exception: {str(e)}")
         
         return None
 
