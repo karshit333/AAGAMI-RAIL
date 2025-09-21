@@ -61,7 +61,6 @@ const AdvancedDisasterManager = ({
     setCustomForm({
       type: 'custom',
       affected_route: '',
-      duration_minutes: 30,
       description: '',
       speed_reduction: 0,
       severity: 'medium'
