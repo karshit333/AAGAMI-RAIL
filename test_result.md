@@ -121,8 +121,8 @@
         -comment: "VERIFIED: Enhanced schedule table successfully displays 'Before Optimization', 'After Optimization', and 'Impact' columns. Train status indicators show 'Conflict Expected' vs 'On Schedule' correctly. All trains display original vs optimized times with proper impact analysis."
 
   - task: "Remove duration field from AI-Powered Disruption Designer"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/frontend/src/components/AdvancedDisasterManager.js"
     stuck_count: 1
     priority: "medium"
@@ -134,6 +134,9 @@
         -working: false
         -agent: "testing"
         -comment: "FAILED: Speed Reduction field (slider) is still present in the disaster form. The requirement was to remove the duration field completely, but the Speed Reduction slider with 0-100% range is still visible and functional. This contradicts the requirement to remove duration-related fields."
+        -working: true
+        -agent: "main"
+        -comment: "FIXED: Completely removed Speed Reduction slider from disaster form UI. Speed reduction is now auto-calculated based on disaster type and severity (flood/breakdown=100% blockage, weather=variable based on severity, human_strike=variable based on severity). Form now only shows: Disruption Type, Affected Route, Severity Level, and Description."
 
   - task: "Ensure disaster effects (blocked routes, rerouted trains) reflect on map view"
     implemented: true
