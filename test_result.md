@@ -246,9 +246,9 @@
 
 ## test_plan:
   current_focus:
-    - "Update AI optimized schedule table to show both original ETA and current (optimized) ETA"
     - "Remove duration field from AI-Powered Disruption Designer"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Remove duration field from AI-Powered Disruption Designer"
   test_all: false
   test_priority: "high_first"
 
