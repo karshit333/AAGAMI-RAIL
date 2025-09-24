@@ -436,13 +436,17 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
     
     print(f"🔍 Finding alternate routes from {start} to {end}")
     print(f"🚫 Blocked routes: {blocked_routes}")
-    print(f"📍 Available connections: {dict(graph)}")
+    print(f"📍 Available route network:")
+    for station, connections in graph.items():
+        print(f"  {station} → {connections}")
     
     # Enhanced BFS to find shortest paths first
     def bfs_shortest_paths(start, end, max_depth=4):
         paths = []
         queue = [(start, [start], 0)]  # (current_station, path, depth)
         visited_at_depth = {}
+        
+        print(f"🔍 Starting BFS from {start} to {end}")
         
         while queue:
             current, path, depth = queue.pop(0)
@@ -458,6 +462,7 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
                 
             # Found destination
             if current == end and len(path) > 1:
+                print(f"🎯 Found destination via path: {' → '.join(path)}")
                 # Build route segments for this path
                 route_segments = []
                 valid_path = True
@@ -472,17 +477,22 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
                         segment_route = route_map[route_key]
                         if segment_route not in blocked_routes:
                             route_segments.append(segment_route)
+                            print(f"  ✅ Using route {segment_route} for {segment_start}→{segment_end}")
                         else:
+                            print(f"  ❌ Route {segment_route} is blocked for {segment_start}→{segment_end}")
                             valid_path = False
                             break
                     elif reverse_key in route_map:
                         segment_route = route_map[reverse_key]
                         if segment_route not in blocked_routes:
                             route_segments.append(segment_route)
+                            print(f"  ✅ Using route {segment_route} for {segment_start}→{segment_end}")
                         else:
+                            print(f"  ❌ Route {segment_route} is blocked for {segment_start}→{segment_end}")
                             valid_path = False
                             break
                     else:
+                        print(f"  ❌ No route found for {segment_start}→{segment_end}")
                         valid_path = False
                         break
                 
@@ -496,17 +506,21 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
                         'total_segments': len(route_segments)
                     }
                     paths.append(path_info)
-                    print(f"✅ Found valid path: {path_info['path_description']} via {path_info['route_description']}")
+                    print(f"✅ VALID PATH FOUND: {path_info['path_description']} via routes {path_info['route_description']}")
+                else:
+                    print(f"❌ Invalid path: {' → '.join(path)} (missing or blocked routes)")
                 continue
             
             # Explore neighbors
             if current in graph:
                 for neighbor in graph[current]:
                     if neighbor not in path:  # avoid cycles
+                        print(f"  🔄 Exploring: {current} → {neighbor} (depth {depth + 1})")
                         queue.append((neighbor, path + [neighbor], depth + 1))
         
         # Sort paths by length (shortest first)
         paths.sort(key=lambda x: (x['path_length'], x['total_segments']))
+        print(f"📊 Found {len(paths)} valid paths, sorted by length")
         return paths
     
     alternate_paths = bfs_shortest_paths(start, end)
