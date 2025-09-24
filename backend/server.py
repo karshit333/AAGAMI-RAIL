@@ -606,28 +606,40 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
             new_train.optimized_arrival = train.planned_arrival
             new_train.optimized_departure = train.planned_departure
             
-            # Handle blocked routes - find alternate path
+            # Handle blocked routes - Enhanced alternate path finding
             if is_blocked:
                 start_station = route_id.split('-')[0]
                 end_station = route_id.split('-')[1]
                 blocked_routes = [r.id for r in current_routes if r.blocked]
                 
+                print(f"🚫 Route {route_id} is BLOCKED - finding alternatives for {start_station} → {end_station}")
+                
                 alternate_paths = find_alternate_routes(start_station, end_station, blocked_routes)
                 
                 if alternate_paths:
-                    # Use the first (shortest) alternate path
+                    # Use the shortest alternate path
                     alt_path = alternate_paths[0]
                     new_train.rerouted = True
                     new_train.new_route = alt_path['route_description']
                     new_train.alternate_path_stations = alt_path['stations']
                     new_train.alternate_route_segments = alt_path['route_segments']
-                    new_train.delay_minutes += 10  # Rerouting adds delay
+                    
+                    # Calculate minimal rerouting delay based on path length
+                    rerouting_delay = min(5 + (alt_path['path_length'] - 1) * 3, 15)  # 5-15 min max
+                    new_train.delay_minutes += rerouting_delay
                     new_train.status = "rerouted"
-                    new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + 10)
-                    new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + 10)
-                    explanations.append(f"Train {train.id[:6]} rerouted via {alt_path['path_description']} (routes: {alt_path['route_description']}) due to {route_id} blockage (+10 min delay)")
+                    new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + rerouting_delay)
+                    new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + rerouting_delay)
+                    
+                    explanations.append(
+                        f"Train {train.id[:6]} rerouted via {alt_path['path_description']} "
+                        f"(routes: {alt_path['route_description']}) due to {route_id} blockage "
+                        f"(+{rerouting_delay} min for {alt_path['path_length']}-hop alternate path)"
+                    )
+                    print(f"✅ {train.id[:6]} successfully rerouted via {alt_path['path_description']}")
                 else:
-                    # No alternate route - significant delay
+                    # No alternate route - apply significant delay
+                    print(f"❌ No alternate route found for {train.id[:6]} on blocked {route_id}")
                     new_train.delay_minutes += 60
                     new_train.status = "critical"
                     new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + 60)
