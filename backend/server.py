@@ -545,27 +545,27 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
                 for i in range(len(path) - 1):
                     segment_start = path[i]
                     segment_end = path[i + 1]
+                    
+                    # Try both directions for route lookup
                     route_key = f"{segment_start}-{segment_end}"
                     reverse_key = f"{segment_end}-{segment_start}"
                     
+                    segment_route = None
+                    # Priority: exact match first, then reverse
                     if route_key in route_map:
                         segment_route = route_map[route_key]
-                        if segment_route not in blocked_routes:
-                            route_segments.append(segment_route)
-                            print(f"  ✅ Using route {segment_route} for {segment_start}→{segment_end}")
-                        else:
-                            print(f"  ❌ Route {segment_route} is blocked for {segment_start}→{segment_end}")
-                            valid_path = False
-                            break
+                        route_direction = route_key
                     elif reverse_key in route_map:
-                        segment_route = route_map[reverse_key]
-                        if segment_route not in blocked_routes:
-                            route_segments.append(segment_route)
-                            print(f"  ✅ Using route {segment_route} for {segment_start}→{segment_end}")
-                        else:
-                            print(f"  ❌ Route {segment_route} is blocked for {segment_start}→{segment_end}")
-                            valid_path = False
-                            break
+                        segment_route = route_map[reverse_key]  
+                        route_direction = reverse_key
+                    
+                    if segment_route and segment_route not in blocked_routes:
+                        route_segments.append(segment_route)
+                        print(f"  ✅ Using route {segment_route} ({route_direction}) for {segment_start}→{segment_end}")
+                    elif segment_route:
+                        print(f"  ❌ Route {segment_route} is blocked for {segment_start}→{segment_end}")
+                        valid_path = False
+                        break
                     else:
                         print(f"  ❌ No route found for {segment_start}→{segment_end}")
                         valid_path = False
