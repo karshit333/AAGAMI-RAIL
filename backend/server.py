@@ -301,6 +301,26 @@ async def debug_routes():
         "active_disasters": len(ACTIVE_DISASTERS)
     }
 
+@app.get("/api/debug/trains")
+async def debug_trains():
+    """Debug endpoint to check train status"""
+    trains_status = []
+    for train in SAMPLE_TRAINS:
+        trains_status.append({
+            "id": train.id,
+            "route": train.route,
+            "rerouted": train.rerouted,
+            "new_route": train.new_route,
+            "alternate_route_segments": getattr(train, 'alternate_route_segments', None),
+            "alternate_path_stations": getattr(train, 'alternate_path_stations', None)
+        })
+    
+    return {
+        "trains": trains_status,
+        "total_trains": len(SAMPLE_TRAINS),
+        "rerouted_trains": [t.id for t in SAMPLE_TRAINS if t.rerouted]
+    }
+
 @app.post("/api/debug/reset")
 async def reset_system():
     """Reset all routes to normal state and clear disasters"""
