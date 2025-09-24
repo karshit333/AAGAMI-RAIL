@@ -218,14 +218,14 @@ SAMPLE_STATIONS = [
 ]
 
 SAMPLE_ROUTES = [
-    Route(id="A-B", stations=["A", "B"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 200}]),
-    Route(id="B-C", stations=["B", "C"], path=[{"x": 300, "y": 200}, {"x": 500, "y": 200}]),
-    Route(id="C-D", stations=["C", "D"], path=[{"x": 500, "y": 200}, {"x": 700, "y": 200}]),
-    Route(id="D-E", stations=["D", "E"], path=[{"x": 700, "y": 200}, {"x": 500, "y": 100}]),
-    Route(id="B-E", stations=["B", "E"], path=[{"x": 300, "y": 200}, {"x": 500, "y": 100}]),
+    Route(id="A-B", stations=["A", "B"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 200}], blocked=False),
+    Route(id="B-C", stations=["B", "C"], path=[{"x": 300, "y": 200}, {"x": 500, "y": 200}], blocked=False),
+    Route(id="C-D", stations=["C", "D"], path=[{"x": 500, "y": 200}, {"x": 700, "y": 200}], blocked=False),
+    Route(id="D-E", stations=["D", "E"], path=[{"x": 700, "y": 200}, {"x": 500, "y": 100}], blocked=False),
+    Route(id="B-E", stations=["B", "E"], path=[{"x": 300, "y": 200}, {"x": 500, "y": 100}], blocked=False),
     # Additional alternate routes for rerouting
-    Route(id="A-C", stations=["A", "C"], path=[{"x": 100, "y": 200}, {"x": 200, "y": 150}, {"x": 500, "y": 200}]),
-    Route(id="A-E", stations=["A", "E"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 100}, {"x": 500, "y": 100}]),
+    Route(id="A-C", stations=["A", "C"], path=[{"x": 100, "y": 200}, {"x": 200, "y": 150}, {"x": 500, "y": 200}], blocked=False),
+    Route(id="A-E", stations=["A", "E"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 100}, {"x": 500, "y": 100}], blocked=False),
 ]
 
 # Generate sample trains with realistic train numbers
