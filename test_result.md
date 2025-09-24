@@ -249,7 +249,7 @@
 
 ## test_plan:
   current_focus:
-    - "Enhanced rerouting logic with proper alternate path finding"
+    - "A-C Route Blockage and A-B-C Rerouting Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -265,6 +265,9 @@
         -working: true
         -agent: "testing"
         -comment: "VERIFIED: Enhanced rerouting logic working perfectly. Flood disaster on A-B route properly reroutes trains via alternate paths (A→C→B using routes A-C, B-C). All rerouted trains include alternate_path_stations and alternate_route_segments fields. Different blocked routes (B-C, C-D) handled correctly with appropriate alternate paths. No trains rerouted 'via blocked routes'. Response structure includes complete alternate path information for map visualization. All 17 backend tests passed including 5 new enhanced rerouting tests."
+        -working: true
+        -agent: "testing"
+        -comment: "A-C ROUTE BLOCKAGE TESTING COMPLETED - ALL SPECIFIC REQUIREMENTS VERIFIED: ✅ A-C Direct Route Blockage: Flood disaster on A-C route successfully blocks direct path and triggers rerouting for TRN011 and TRN012. ✅ A→B→C Rerouting: Both trains rerouted via A→B→C path using route segments ['A-B', 'B-C'] with 8-minute delays (within 5-15min range). ✅ Enhanced Route Finding: find_alternate_routes function correctly identifies A→B→C as shortest 2-hop alternative. ✅ Route Prioritization: Shortest paths selected first (A→B→C = 2 hops vs longer alternatives). ✅ Response Structure: All rerouted trains include alternate_path_stations: ['A', 'B', 'C'], alternate_route_segments: ['A-B', 'B-C'], new_route: 'A-B → B-C'. ✅ Console Logging: Shows 'Found valid path: A → B → C via A-B → B-C'. ✅ B-C Blockage Comparison: Alternate routing works for other routes (B→A→C when B-C blocked). ✅ Explanation Accuracy: Mentions actual alternate paths, not blocked routes. All 21 backend tests passed including 4 new A-C specific tests."
 
 ## agent_communication:
     -agent: "main"
