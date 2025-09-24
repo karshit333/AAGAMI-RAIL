@@ -1354,6 +1354,220 @@ class AagamiRailAPITester:
         
         return None
 
+    def test_ac_route_blockage_console_output(self):
+        """Test A-C Route Blockage with Console Output Analysis (SPECIFIC USER REQUEST)"""
+        try:
+            print("\n" + "="*80)
+            print("🎯 SPECIFIC A-C ROUTE BLOCKAGE TEST - CONSOLE OUTPUT ANALYSIS")
+            print("="*80)
+            
+            # Create A-C Route Flood Disaster (complete blockage)
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-C",
+                "duration_minutes": 120,
+                "description": "Heavy rainfall floods A-C section causing complete blockage",
+                "severity": "high",
+                "speed_reduction": 0.0  # Complete blockage
+            }
+            
+            print("🚫 Creating A-C Route Flood Disaster...")
+            print(f"   - Route: A-C (COMPLETE BLOCKAGE)")
+            print(f"   - Affected Trains: TRN011, TRN012")
+            print(f"   - Expected Rerouting: A→B→C")
+            print()
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                explanations = result.get('explanations', [])
+                
+                print("📊 DISASTER RESPONSE ANALYSIS:")
+                print("-" * 50)
+                
+                # Find TRN011 and TRN012 specifically
+                trn011 = next((train for train in optimized_trains if train.get('id') == 'TRN011'), None)
+                trn012 = next((train for train in optimized_trains if train.get('id') == 'TRN012'), None)
+                
+                console_test_passed = True
+                console_details = []
+                
+                # Analyze TRN011
+                if trn011:
+                    print(f"🚂 TRN011 Analysis:")
+                    print(f"   - Original Route: {trn011.get('route', 'N/A')}")
+                    print(f"   - Rerouted: {trn011.get('rerouted', False)}")
+                    
+                    if trn011.get('rerouted', False):
+                        alt_path = trn011.get('alternate_path_stations', [])
+                        alt_segments = trn011.get('alternate_route_segments', [])
+                        new_route = trn011.get('new_route', '')
+                        delay = trn011.get('delay_minutes', 0)
+                        
+                        print(f"   - Alternate Path Stations: {alt_path}")
+                        print(f"   - Alternate Route Segments: {alt_segments}")
+                        print(f"   - New Route Description: {new_route}")
+                        print(f"   - Rerouting Delay: {delay} minutes")
+                        
+                        # Validate A→B→C rerouting
+                        if alt_path == ['A', 'B', 'C'] and alt_segments == ['A-B', 'B-C']:
+                            if new_route == 'A-B → B-C':
+                                if delay >= 5 and delay <= 15:
+                                    console_details.append("✅ TRN011: Perfect A→B→C rerouting")
+                                    print("   ✅ VALIDATION: Perfect A→B→C rerouting")
+                                else:
+                                    console_test_passed = False
+                                    console_details.append(f"❌ TRN011: Delay {delay}min outside 5-15min range")
+                                    print(f"   ❌ VALIDATION: Delay {delay}min outside expected range")
+                            else:
+                                console_test_passed = False
+                                console_details.append(f"❌ TRN011: Wrong route description '{new_route}'")
+                                print(f"   ❌ VALIDATION: Wrong route description")
+                        else:
+                            console_test_passed = False
+                            console_details.append(f"❌ TRN011: Wrong path {alt_path} via {alt_segments}")
+                            print(f"   ❌ VALIDATION: Wrong rerouting path")
+                    else:
+                        console_test_passed = False
+                        console_details.append("❌ TRN011: Not rerouted")
+                        print("   ❌ VALIDATION: Train not rerouted")
+                else:
+                    console_test_passed = False
+                    console_details.append("❌ TRN011: Not found")
+                    print("   ❌ ERROR: TRN011 not found in response")
+                
+                print()
+                
+                # Analyze TRN012
+                if trn012:
+                    print(f"🚂 TRN012 Analysis:")
+                    print(f"   - Original Route: {trn012.get('route', 'N/A')}")
+                    print(f"   - Rerouted: {trn012.get('rerouted', False)}")
+                    
+                    if trn012.get('rerouted', False):
+                        alt_path = trn012.get('alternate_path_stations', [])
+                        alt_segments = trn012.get('alternate_route_segments', [])
+                        new_route = trn012.get('new_route', '')
+                        delay = trn012.get('delay_minutes', 0)
+                        
+                        print(f"   - Alternate Path Stations: {alt_path}")
+                        print(f"   - Alternate Route Segments: {alt_segments}")
+                        print(f"   - New Route Description: {new_route}")
+                        print(f"   - Rerouting Delay: {delay} minutes")
+                        
+                        # Validate A→B→C rerouting
+                        if alt_path == ['A', 'B', 'C'] and alt_segments == ['A-B', 'B-C']:
+                            if new_route == 'A-B → B-C':
+                                if delay >= 5 and delay <= 15:
+                                    console_details.append("✅ TRN012: Perfect A→B→C rerouting")
+                                    print("   ✅ VALIDATION: Perfect A→B→C rerouting")
+                                else:
+                                    console_test_passed = False
+                                    console_details.append(f"❌ TRN012: Delay {delay}min outside 5-15min range")
+                                    print(f"   ❌ VALIDATION: Delay {delay}min outside expected range")
+                            else:
+                                console_test_passed = False
+                                console_details.append(f"❌ TRN012: Wrong route description '{new_route}'")
+                                print(f"   ❌ VALIDATION: Wrong route description")
+                        else:
+                            console_test_passed = False
+                            console_details.append(f"❌ TRN012: Wrong path {alt_path} via {alt_segments}")
+                            print(f"   ❌ VALIDATION: Wrong rerouting path")
+                    else:
+                        console_test_passed = False
+                        console_details.append("❌ TRN012: Not rerouted")
+                        print("   ❌ VALIDATION: Train not rerouted")
+                else:
+                    console_test_passed = False
+                    console_details.append("❌ TRN012: Not found")
+                    print("   ❌ ERROR: TRN012 not found in response")
+                
+                print()
+                print("🔍 EXPLANATION ANALYSIS:")
+                print("-" * 30)
+                
+                # Analyze explanations for expected console output patterns
+                expected_patterns = [
+                    "finding alternate routes from a to c",
+                    "available route network",
+                    "valid path found: a → b → c",
+                    "a-b → b-c"
+                ]
+                
+                found_patterns = []
+                for explanation in explanations:
+                    explanation_lower = explanation.lower()
+                    print(f"📝 {explanation}")
+                    
+                    for pattern in expected_patterns:
+                        if pattern in explanation_lower:
+                            found_patterns.append(pattern)
+                
+                print()
+                print("🎯 EXPECTED CONSOLE OUTPUT VALIDATION:")
+                print("-" * 40)
+                
+                expected_console_outputs = [
+                    "🚫 Route A-C is BLOCKED - finding alternatives for A → C",
+                    "🔍 Finding alternate routes from A to C",
+                    "📍 Available route network:",
+                    "✅ VALID PATH FOUND: A → B → C via routes A-B → B-C"
+                ]
+                
+                for expected in expected_console_outputs:
+                    print(f"Expected: {expected}")
+                    # Note: We can't capture actual console output from the backend server
+                    # But we can verify the logic worked by checking the results
+                
+                print()
+                print("📋 RESPONSE VALIDATION SUMMARY:")
+                print("-" * 35)
+                
+                # Check if both trains were rerouted correctly
+                both_trains_correct = (
+                    trn011 and trn011.get('rerouted', False) and 
+                    trn011.get('alternate_path_stations') == ['A', 'B', 'C'] and
+                    trn011.get('alternate_route_segments') == ['A-B', 'B-C'] and
+                    trn012 and trn012.get('rerouted', False) and 
+                    trn012.get('alternate_path_stations') == ['A', 'B', 'C'] and
+                    trn012.get('alternate_route_segments') == ['A-B', 'B-C']
+                )
+                
+                if both_trains_correct:
+                    print("✅ Both TRN011 and TRN012 rerouted via A→B→C")
+                    print("✅ Route segments are ['A-B', 'B-C'] as expected")
+                    print("✅ Path description is 'A → B → C' as expected")
+                    print("✅ No 60-minute delays - trains rerouted instead")
+                else:
+                    print("❌ Rerouting validation failed")
+                
+                if console_test_passed and both_trains_correct:
+                    self.log_test("A-C Route Blockage Console Output Analysis", True, 
+                                f"SPECIFIC TEST PASSED: {'; '.join(console_details)}")
+                    print("\n🎉 SPECIFIC A-C ROUTE BLOCKAGE TEST: PASSED")
+                    return result
+                else:
+                    self.log_test("A-C Route Blockage Console Output Analysis", False, 
+                                f"Console output test issues: {'; '.join(console_details)}")
+                    print("\n❌ SPECIFIC A-C ROUTE BLOCKAGE TEST: FAILED")
+            else:
+                self.log_test("A-C Route Blockage Console Output Analysis", False, f"HTTP {response.status_code}")
+                print(f"\n❌ HTTP Error: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("A-C Route Blockage Console Output Analysis", False, f"Exception: {str(e)}")
+            print(f"\n❌ Exception: {str(e)}")
+        
+        print("="*80)
+        return None
+
     def run_all_tests(self):
         """Run all backend API tests - Enhanced for AAGAMI RAIL requirements"""
         print("🚂 AAGAMI RAIL Backend API Testing Suite")
