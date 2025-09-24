@@ -285,8 +285,13 @@ DISASTER_SCENARIOS = {
 @app.get("/api/debug/routes")
 async def debug_routes():
     """Debug endpoint to check route status"""
+    # Get current routes (with any active disasters applied)
+    current_routes = SAMPLE_ROUTES
+    if ACTIVE_DISASTERS:
+        current_routes = apply_disasters(SAMPLE_ROUTES, ACTIVE_DISASTERS)
+    
     routes_status = []
-    for route in SAMPLE_ROUTES:
+    for route in current_routes:
         routes_status.append({
             "id": route.id,
             "blocked": route.blocked,
@@ -296,9 +301,10 @@ async def debug_routes():
     
     return {
         "routes": routes_status,
-        "total_routes": len(SAMPLE_ROUTES),
-        "blocked_routes": [r.id for r in SAMPLE_ROUTES if r.blocked],
-        "active_disasters": len(ACTIVE_DISASTERS)
+        "total_routes": len(current_routes),
+        "blocked_routes": [r.id for r in current_routes if r.blocked],
+        "active_disasters": len(ACTIVE_DISASTERS),
+        "disaster_types": [d.type.value for d in ACTIVE_DISASTERS] if ACTIVE_DISASTERS else []
     }
 
 @app.get("/api/debug/trains")
