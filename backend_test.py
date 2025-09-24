@@ -984,6 +984,343 @@ class AagamiRailAPITester:
         
         return None
 
+    def test_ac_route_blockage_specific(self):
+        """Test A-C Direct Route Blockage and A-B-C Rerouting (SPECIFIC FOCUS)"""
+        try:
+            # Create flood disaster affecting A-C route (complete blockage)
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-C",
+                "duration_minutes": 120,
+                "description": "Heavy rainfall floods A-C section causing complete blockage",
+                "severity": "high",
+                "speed_reduction": 0.0  # Complete blockage
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                explanations = result.get('explanations', [])
+                
+                # Find TRN011 and TRN012 specifically (they use A-C route)
+                trn011 = next((train for train in optimized_trains if train.get('id') == 'TRN011'), None)
+                trn012 = next((train for train in optimized_trains if train.get('id') == 'TRN012'), None)
+                
+                ac_test_passed = True
+                ac_details = []
+                
+                # Test TRN011
+                if trn011:
+                    if trn011.get('rerouted', False):
+                        alt_path = trn011.get('alternate_path_stations', [])
+                        alt_segments = trn011.get('alternate_route_segments', [])
+                        delay = trn011.get('delay_minutes', 0)
+                        
+                        # Check if rerouted via A→B→C path
+                        if alt_path == ['A', 'B', 'C'] and alt_segments == ['A-B', 'B-C']:
+                            if delay >= 5 and delay <= 15:  # Minimal rerouting delay
+                                ac_details.append(f"✅ TRN011: Correctly rerouted A→B→C with {delay}min delay")
+                            else:
+                                ac_test_passed = False
+                                ac_details.append(f"❌ TRN011: Rerouted correctly but delay {delay}min not in 5-15min range")
+                        else:
+                            ac_test_passed = False
+                            ac_details.append(f"❌ TRN011: Wrong rerouting path {alt_path} via {alt_segments}")
+                    else:
+                        # Check if given 60-minute delay instead of rerouting
+                        delay = trn011.get('delay_minutes', 0)
+                        if delay >= 60:
+                            ac_test_passed = False
+                            ac_details.append(f"❌ TRN011: Given {delay}min delay instead of A→B→C rerouting")
+                        else:
+                            ac_test_passed = False
+                            ac_details.append(f"❌ TRN011: Not rerouted and insufficient delay ({delay}min)")
+                else:
+                    ac_test_passed = False
+                    ac_details.append("❌ TRN011 not found in response")
+                
+                # Test TRN012
+                if trn012:
+                    if trn012.get('rerouted', False):
+                        alt_path = trn012.get('alternate_path_stations', [])
+                        alt_segments = trn012.get('alternate_route_segments', [])
+                        delay = trn012.get('delay_minutes', 0)
+                        
+                        # Check if rerouted via A→B→C path
+                        if alt_path == ['A', 'B', 'C'] and alt_segments == ['A-B', 'B-C']:
+                            if delay >= 5 and delay <= 15:  # Minimal rerouting delay
+                                ac_details.append(f"✅ TRN012: Correctly rerouted A→B→C with {delay}min delay")
+                            else:
+                                ac_test_passed = False
+                                ac_details.append(f"❌ TRN012: Rerouted correctly but delay {delay}min not in 5-15min range")
+                        else:
+                            ac_test_passed = False
+                            ac_details.append(f"❌ TRN012: Wrong rerouting path {alt_path} via {alt_segments}")
+                    else:
+                        # Check if given 60-minute delay instead of rerouting
+                        delay = trn012.get('delay_minutes', 0)
+                        if delay >= 60:
+                            ac_test_passed = False
+                            ac_details.append(f"❌ TRN012: Given {delay}min delay instead of A→B→C rerouting")
+                        else:
+                            ac_test_passed = False
+                            ac_details.append(f"❌ TRN012: Not rerouted and insufficient delay ({delay}min)")
+                else:
+                    ac_test_passed = False
+                    ac_details.append("❌ TRN012 not found in response")
+                
+                # Check explanations mention A→B→C path
+                explanation_mentions_abc = False
+                for explanation in explanations:
+                    if "a → b → c" in explanation.lower() or ("a-b" in explanation.lower() and "b-c" in explanation.lower()):
+                        explanation_mentions_abc = True
+                        ac_details.append("✅ Explanations mention A→B→C alternate path")
+                        break
+                
+                if not explanation_mentions_abc:
+                    ac_details.append("⚠️ Explanations don't explicitly mention A→B→C path")
+                
+                if ac_test_passed:
+                    self.log_test("A-C Route Blockage → A→B→C Rerouting", True, 
+                                f"TRN011 and TRN012 correctly rerouted via A→B→C: {'; '.join(ac_details)}")
+                    return result
+                else:
+                    self.log_test("A-C Route Blockage → A→B→C Rerouting", False, 
+                                f"A-C blockage rerouting issues: {'; '.join(ac_details)}")
+            else:
+                self.log_test("A-C Route Blockage → A→B→C Rerouting", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("A-C Route Blockage → A→B→C Rerouting", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_shortest_path_prioritization(self):
+        """Test that shortest paths (A→B→C = 2 hops) are selected first"""
+        try:
+            # Create flood disaster on A-C to test path prioritization
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-C",
+                "duration_minutes": 90,
+                "description": "Test shortest path prioritization for A-C blockage",
+                "severity": "high"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                
+                # Find trains originally on A-C route
+                ac_trains = [train for train in optimized_trains if train.get('route') == 'A-C']
+                
+                path_test_passed = True
+                path_details = []
+                
+                for train in ac_trains:
+                    train_id = train.get('id', '')[:6]
+                    
+                    if train.get('rerouted', False):
+                        alt_path = train.get('alternate_path_stations', [])
+                        alt_segments = train.get('alternate_route_segments', [])
+                        
+                        # Calculate path length (number of hops)
+                        path_length = len(alt_path) - 1 if alt_path else 0
+                        
+                        # A→B→C should be the shortest (2 hops)
+                        if alt_path == ['A', 'B', 'C'] and path_length == 2:
+                            path_details.append(f"✅ Train {train_id}: Shortest path A→B→C selected ({path_length} hops)")
+                        elif path_length > 2:
+                            # Check if there was a valid reason for longer path
+                            if 'A-B' in alt_segments or 'B-C' in alt_segments:
+                                path_test_passed = False
+                                path_details.append(f"❌ Train {train_id}: Longer path {' → '.join(alt_path)} ({path_length} hops) when A→B→C available")
+                            else:
+                                path_details.append(f"⚠️ Train {train_id}: Longer path {' → '.join(alt_path)} ({path_length} hops) - may be justified")
+                        else:
+                            path_test_passed = False
+                            path_details.append(f"❌ Train {train_id}: Invalid path {alt_path}")
+                    else:
+                        path_details.append(f"⚠️ Train {train_id}: Not rerouted")
+                
+                if path_test_passed and len(ac_trains) > 0:
+                    self.log_test("Shortest Path Prioritization (A→B→C)", True, 
+                                f"Shortest paths correctly prioritized: {'; '.join(path_details)}")
+                    return result
+                elif len(ac_trains) == 0:
+                    self.log_test("Shortest Path Prioritization (A→B→C)", False, "No A-C trains found to test")
+                else:
+                    self.log_test("Shortest Path Prioritization (A→B→C)", False, 
+                                f"Path prioritization issues: {'; '.join(path_details)}")
+            else:
+                self.log_test("Shortest Path Prioritization (A→B→C)", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Shortest Path Prioritization (A→B→C)", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_bc_blockage_comparison(self):
+        """Test B-C blockage to ensure alternate routing works for other routes too"""
+        try:
+            # Create flood disaster on B-C route
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "B-C",
+                "duration_minutes": 90,
+                "description": "Test B-C blockage for comparison with A-C blockage",
+                "severity": "high"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                
+                # Find trains originally on B-C route
+                bc_trains = [train for train in optimized_trains if train.get('route') == 'B-C']
+                
+                bc_test_passed = True
+                bc_details = []
+                
+                for train in bc_trains:
+                    train_id = train.get('id', '')[:6]
+                    
+                    if train.get('rerouted', False):
+                        alt_path = train.get('alternate_path_stations', [])
+                        alt_segments = train.get('alternate_route_segments', [])
+                        delay = train.get('delay_minutes', 0)
+                        
+                        # Verify alternate path doesn't use blocked B-C
+                        if 'B-C' not in alt_segments:
+                            # Check for reasonable alternate paths (B→A→C, B→E→D→C, etc.)
+                            if len(alt_path) >= 3 and alt_path[0] == 'B' and alt_path[-1] == 'C':
+                                bc_details.append(f"✅ Train {train_id}: Valid alternate B→C via {' → '.join(alt_path)} (+{delay}min)")
+                            else:
+                                bc_test_passed = False
+                                bc_details.append(f"❌ Train {train_id}: Invalid alternate path {alt_path}")
+                        else:
+                            bc_test_passed = False
+                            bc_details.append(f"❌ Train {train_id}: Uses blocked B-C route in alternate path!")
+                    else:
+                        delay = train.get('delay_minutes', 0)
+                        if delay >= 30:
+                            bc_details.append(f"⚠️ Train {train_id}: Not rerouted, given {delay}min delay")
+                        else:
+                            bc_test_passed = False
+                            bc_details.append(f"❌ Train {train_id}: Not rerouted, insufficient delay ({delay}min)")
+                
+                if bc_test_passed and len(bc_trains) > 0:
+                    self.log_test("B-C Route Blockage Alternate Routing", True, 
+                                f"B-C blockage handled correctly: {'; '.join(bc_details)}")
+                    return result
+                elif len(bc_trains) == 0:
+                    self.log_test("B-C Route Blockage Alternate Routing", False, "No B-C trains found to test")
+                else:
+                    self.log_test("B-C Route Blockage Alternate Routing", False, 
+                                f"B-C blockage issues: {'; '.join(bc_details)}")
+            else:
+                self.log_test("B-C Route Blockage Alternate Routing", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("B-C Route Blockage Alternate Routing", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_delay_calculation_accuracy(self):
+        """Test that rerouting delays are calculated correctly (5-15 minutes for 2-hop paths)"""
+        try:
+            # Create flood disaster on A-C to test delay calculation
+            flood_disaster = {
+                "type": "flood",
+                "affected_route": "A-C",
+                "duration_minutes": 60,
+                "description": "Test delay calculation for A→B→C rerouting",
+                "severity": "high"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/disaster/custom", 
+                json=flood_disaster,
+                headers={'Content-Type': 'application/json'},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                optimized_trains = result.get('optimized_trains', [])
+                
+                # Find rerouted trains from A-C route
+                ac_rerouted = [train for train in optimized_trains 
+                             if train.get('route') == 'A-C' and train.get('rerouted', False)]
+                
+                delay_test_passed = True
+                delay_details = []
+                
+                for train in ac_rerouted:
+                    train_id = train.get('id', '')[:6]
+                    delay = train.get('delay_minutes', 0)
+                    alt_path = train.get('alternate_path_stations', [])
+                    path_length = len(alt_path) - 1 if alt_path else 0
+                    
+                    # For A→B→C (2 hops), delay should be 5 + (2-1)*3 = 8 minutes, range 5-15
+                    if path_length == 2:  # 2-hop path
+                        expected_min = 5
+                        expected_max = 15
+                        
+                        if expected_min <= delay <= expected_max:
+                            delay_details.append(f"✅ Train {train_id}: {delay}min delay for {path_length}-hop path (expected {expected_min}-{expected_max}min)")
+                        else:
+                            delay_test_passed = False
+                            delay_details.append(f"❌ Train {train_id}: {delay}min delay for {path_length}-hop path (expected {expected_min}-{expected_max}min)")
+                    else:
+                        # For other path lengths, check if delay is reasonable
+                        expected_min = 5 + max(0, (path_length - 1) * 3)
+                        expected_max = min(15, expected_min + 5)
+                        
+                        if expected_min <= delay <= expected_max + 5:  # Allow some flexibility
+                            delay_details.append(f"✅ Train {train_id}: {delay}min delay for {path_length}-hop path")
+                        else:
+                            delay_test_passed = False
+                            delay_details.append(f"❌ Train {train_id}: {delay}min delay seems incorrect for {path_length}-hop path")
+                
+                if delay_test_passed and len(ac_rerouted) > 0:
+                    self.log_test("Rerouting Delay Calculation Accuracy", True, 
+                                f"Delays calculated correctly: {'; '.join(delay_details)}")
+                    return result
+                elif len(ac_rerouted) == 0:
+                    self.log_test("Rerouting Delay Calculation Accuracy", False, "No rerouted A-C trains found to test delays")
+                else:
+                    self.log_test("Rerouting Delay Calculation Accuracy", False, 
+                                f"Delay calculation issues: {'; '.join(delay_details)}")
+            else:
+                self.log_test("Rerouting Delay Calculation Accuracy", False, f"HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Rerouting Delay Calculation Accuracy", False, f"Exception: {str(e)}")
+        
+        return None
+
     def test_get_performance_metrics(self):
         """Test GET /api/performance endpoint"""
         try:
