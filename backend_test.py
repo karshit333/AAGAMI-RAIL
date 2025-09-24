@@ -1391,6 +1391,14 @@ class AagamiRailAPITester:
         self.test_no_alternative_scenario()
         self.test_rerouting_explanation_accuracy()
         
+        # A-C ROUTE BLOCKAGE SPECIFIC TESTS (Review Request Focus)
+        print("\n🎯 A-C ROUTE BLOCKAGE SPECIFIC TESTS")
+        print("-" * 40)
+        self.test_ac_route_blockage_specific()
+        self.test_shortest_path_prioritization()
+        self.test_bc_blockage_comparison()
+        self.test_delay_calculation_accuracy()
+        
         # Test performance metrics
         performance = self.test_get_performance_metrics()
         
