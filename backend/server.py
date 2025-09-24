@@ -282,6 +282,46 @@ DISASTER_SCENARIOS = {
 }
 
 
+@app.get("/api/debug/routes")
+async def debug_routes():
+    """Debug endpoint to check route status"""
+    routes_status = []
+    for route in SAMPLE_ROUTES:
+        routes_status.append({
+            "id": route.id,
+            "blocked": route.blocked,
+            "speed_reduction": route.speed_reduction,
+            "stations": route.stations
+        })
+    
+    return {
+        "routes": routes_status,
+        "total_routes": len(SAMPLE_ROUTES),
+        "blocked_routes": [r.id for r in SAMPLE_ROUTES if r.blocked],
+        "active_disasters": len(ACTIVE_DISASTERS)
+    }
+
+@app.get("/api/debug/trains")
+async def debug_trains():
+    """Debug endpoint to check train status"""
+    trains_status = []
+    for train in SAMPLE_TRAINS:
+        trains_status.append({
+            "id": train.id,
+            "route": train.route,
+            "rerouted": train.rerouted,
+            "new_route": train.new_route,
+            "alternate_route_segments": getattr(train, 'alternate_route_segments', None),
+            "alternate_path_stations": getattr(train, 'alternate_path_stations', None)
+        })
+    
+    return {
+        "trains": trains_status,
+        "total_trains": len(SAMPLE_TRAINS),
+        "rerouted_trains": [t.id for t in SAMPLE_TRAINS if t.rerouted]
+    }
+
+
 # Utility functions
 def time_to_minutes(time_str: str) -> int:
     """Convert HH:MM to minutes since midnight"""
