@@ -1613,6 +1613,11 @@ class AagamiRailAPITester:
         self.test_bc_blockage_comparison()
         self.test_delay_calculation_accuracy()
         
+        # SPECIFIC USER REQUEST TEST - A-C Route Blockage Console Output
+        print("\n🎯 SPECIFIC USER REQUEST TEST")
+        print("-" * 40)
+        self.test_ac_route_blockage_console_output()
+        
         # Test performance metrics
         performance = self.test_get_performance_metrics()
         
