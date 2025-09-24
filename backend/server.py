@@ -240,6 +240,9 @@ SAMPLE_TRAINS = [
     Train(id="TRN008", priority=Priority.LOW, planned_arrival="08:35", planned_departure="08:50", route="B-E", details=generate_train_details("B-E")),
     Train(id="TRN009", priority=Priority.HIGH, planned_arrival="08:40", planned_departure="08:55", route="C-D", details=generate_train_details("C-D")),
     Train(id="TRN010", priority=Priority.LOW, planned_arrival="08:45", planned_departure="09:00", route="A-B", details=generate_train_details("A-B")),
+    # Add trains that use A-C direct route for testing rerouting
+    Train(id="TRN011", priority=Priority.MEDIUM, planned_arrival="08:50", planned_departure="09:05", route="A-C", details=generate_train_details("A-C")),
+    Train(id="TRN012", priority=Priority.HIGH, planned_arrival="09:00", planned_departure="09:15", route="A-C", details=generate_train_details("A-C")),
 ]
 
 # Enhanced disaster scenarios
