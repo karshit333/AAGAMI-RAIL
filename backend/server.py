@@ -412,34 +412,53 @@ def check_and_generate_alerts(trains: List[Train], disasters: List[Disaster] = N
 
 
 def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> List[Dict]:
-    """Find alternate paths between stations avoiding blocked routes"""
+    """Find alternate paths between stations avoiding blocked routes with shortest path priority"""
     # Create adjacency graph from available routes
     graph = defaultdict(list)
     route_map = {}
     
+    # Build comprehensive network graph
     for route in SAMPLE_ROUTES:
         if len(route.stations) >= 2 and route.id not in blocked_routes:
             start_station = route.stations[0]
             end_station = route.stations[-1]
+            
+            # Add bidirectional connections
             graph[start_station].append(end_station)
-            graph[end_station].append(start_station)  # bidirectional
+            graph[end_station].append(start_station)
+            
+            # Map both directions for route lookup
             route_map[f"{start_station}-{end_station}"] = route.id
             route_map[f"{end_station}-{start_station}"] = route.id
     
-    # BFS to find paths
-    def bfs_paths(start, end, max_depth=3):
+    print(f"🔍 Finding alternate routes from {start} to {end}")
+    print(f"🚫 Blocked routes: {blocked_routes}")
+    print(f"📍 Available connections: {dict(graph)}")
+    
+    # Enhanced BFS to find shortest paths first
+    def bfs_shortest_paths(start, end, max_depth=4):
         paths = []
-        queue = [(start, [start])]
+        queue = [(start, [start], 0)]  # (current_station, path, depth)
+        visited_at_depth = {}
         
         while queue:
-            current, path = queue.pop(0)
+            current, path, depth = queue.pop(0)
             
-            if len(path) > max_depth:
+            # Skip if we've exceeded max depth
+            if depth > max_depth:
                 continue
+            
+            # Skip if we've found shorter paths to this station
+            if current in visited_at_depth and visited_at_depth[current] < depth:
+                continue
+            visited_at_depth[current] = depth
                 
+            # Found destination
             if current == end and len(path) > 1:
                 # Build route segments for this path
                 route_segments = []
+                valid_path = True
+                
                 for i in range(len(path) - 1):
                     segment_start = path[i]
                     segment_end = path[i + 1]
@@ -447,26 +466,56 @@ def find_alternate_routes(start: str, end: str, blocked_routes: List[str]) -> Li
                     reverse_key = f"{segment_end}-{segment_start}"
                     
                     if route_key in route_map:
-                        route_segments.append(route_map[route_key])
+                        segment_route = route_map[route_key]
+                        if segment_route not in blocked_routes:
+                            route_segments.append(segment_route)
+                        else:
+                            valid_path = False
+                            break
                     elif reverse_key in route_map:
-                        route_segments.append(route_map[reverse_key])
+                        segment_route = route_map[reverse_key]
+                        if segment_route not in blocked_routes:
+                            route_segments.append(segment_route)
+                        else:
+                            valid_path = False
+                            break
+                    else:
+                        valid_path = False
+                        break
                 
-                paths.append({
-                    'stations': path,
-                    'route_segments': route_segments,
-                    'path_description': ' → '.join(path),
-                    'route_description': ' → '.join(route_segments)
-                })
+                if valid_path and route_segments:
+                    path_info = {
+                        'stations': path,
+                        'route_segments': route_segments,
+                        'path_description': ' → '.join(path),
+                        'route_description': ' → '.join(route_segments),
+                        'path_length': len(path) - 1,
+                        'total_segments': len(route_segments)
+                    }
+                    paths.append(path_info)
+                    print(f"✅ Found valid path: {path_info['path_description']} via {path_info['route_description']}")
                 continue
             
-            for neighbor in graph[current]:
-                if neighbor not in path:  # avoid cycles
-                    queue.append((neighbor, path + [neighbor]))
+            # Explore neighbors
+            if current in graph:
+                for neighbor in graph[current]:
+                    if neighbor not in path:  # avoid cycles
+                        queue.append((neighbor, path + [neighbor], depth + 1))
         
+        # Sort paths by length (shortest first)
+        paths.sort(key=lambda x: (x['path_length'], x['total_segments']))
         return paths
     
-    paths = bfs_paths(start, end)
-    return paths[:3]  # Return top 3 alternate paths
+    alternate_paths = bfs_shortest_paths(start, end)
+    
+    if alternate_paths:
+        print(f"🎯 Found {len(alternate_paths)} alternate paths for {start}-{end}")
+        for i, path in enumerate(alternate_paths[:3]):
+            print(f"  {i+1}. {path['path_description']} ({path['path_length']} hops)")
+    else:
+        print(f"❌ No alternate paths found for {start}-{end}")
+    
+    return alternate_paths[:3]  # Return top 3 shortest alternate paths
 
 
 def apply_disasters(routes: List[Route], disasters: List[Disaster]) -> List[Route]:
