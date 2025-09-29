@@ -51,7 +51,6 @@ class TrainCategory(str, Enum):
     PASSENGER = "Passenger"       # Regular passenger
     LOCAL = "Local"              # Suburban local
     GOODS = "Goods"              # Freight
-    MEMU = "MEMU"                # Multiple unit local
     DMU = "DMU"                  # Diesel multiple unit
 
 class DisasterType(str, Enum):
