@@ -176,6 +176,33 @@ function App() {
     }));
   };
 
+  const resetSystem = async () => {
+    try {
+      setSimulationRunning(false);
+      setHasOptimized(false);
+      setOptimizedTrains([]);
+      setKpis({});
+      setExplanations([]);
+      setAlerts([]);
+      setSystemAlerts([]);
+      setWhatChanged(null);
+      setDisasterSummary("");
+      setRealTimeTrains([]);
+      setSimulationState({
+        state: "paused",
+        speed: 1.0,
+        current_time: "08:00",
+        auto_advance: true
+      });
+      
+      // Reload original data
+      await loadInitialData();
+      console.log("System reset to original state");
+    } catch (error) {
+      console.error("Error resetting system:", error);
+    }
+  };
+
   const handleSimulationUpdate = () => {
     loadSystemAlerts();
   };
