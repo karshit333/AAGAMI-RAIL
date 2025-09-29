@@ -55,17 +55,9 @@ function App() {
   const [systemAlerts, setSystemAlerts] = useState([]);
   const [whatChanged, setWhatChanged] = useState(null);
   
-  // Real-time simulation state
-  const [simulationState, setSimulationState] = useState({
-    state: "paused",
-    speed: 1.0,
-    current_time: "08:00",
-    auto_advance: true
-  });
-  const [realTimeTrains, setRealTimeTrains] = useState([]);
+  // Performance and section data
   const [performanceMetrics, setPerformanceMetrics] = useState(null);
   const [sectionInfo, setSectionInfo] = useState(null);
-  const [simulationRunning, setSimulationRunning] = useState(false);
 
   useEffect(() => {
     loadInitialData();
