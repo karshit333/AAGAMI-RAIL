@@ -51,13 +51,13 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
     passengerSatisfaction: 8.5
   };
 
-  const trainTypeDistribution = trains.reduce((acc, train) => {
+  const trainTypeDistribution = currentTrains.reduce((acc, train) => {
     const type = train.train_type || 'Express';
     acc[type] = (acc[type] || 0) + 1;
     return acc;
   }, {});
 
-  const categoryDistribution = trains.reduce((acc, train) => {
+  const categoryDistribution = currentTrains.reduce((acc, train) => {
     const category = train.train_category || 'Mail/Express';
     acc[category] = (acc[category] || 0) + 1;
     return acc;
