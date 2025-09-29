@@ -397,7 +397,143 @@ async def debug_trains():
         "rerouted_trains": [t.id for t in SAMPLE_TRAINS if t.rerouted]
     }
 
-@app.post("/api/debug/reset")
+@app.post("/api/controller/override")
+async def controller_override_decision(override_data: Dict):
+    """Allow section controller to override AI recommendations"""
+    global AUDIT_TRAIL
+    
+    train_id = override_data.get("train_id")
+    override_reason = override_data.get("reason", "Controller decision")
+    new_schedule = override_data.get("new_schedule", {})
+    controller_id = override_data.get("controller_id", "CTRL001")
+    
+    # Find the train
+    train = next((t for t in SAMPLE_TRAINS if t.id == train_id), None)
+    if not train:
+        raise HTTPException(status_code=404, detail="Train not found")
+    
+    # Record original state
+    original_state = {
+        "planned_arrival": train.planned_arrival,
+        "planned_departure": train.planned_departure,
+        "route": train.route,
+        "platform": train.platform_assigned
+    }
+    
+    # Apply override
+    train.controller_override = True
+    train.override_reason = override_reason
+    if "arrival" in new_schedule:
+        train.optimized_arrival = new_schedule["arrival"]
+    if "departure" in new_schedule:
+        train.optimized_departure = new_schedule["departure"]
+    if "platform" in new_schedule:
+        train.platform_assigned = new_schedule["platform"]
+    
+    # Create audit record
+    audit_record = DecisionAudit(
+        controller_id=controller_id,
+        section_id=train.section_id,
+        decision_type="override",
+        train_ids=[train_id],
+        original_plan=original_state,
+        ai_recommendation={},  # Would contain AI's suggestion
+        final_decision=new_schedule,
+        override_applied=True,
+        override_reason=override_reason
+    )
+    
+    AUDIT_TRAIL.append(audit_record)
+    
+    return {
+        "message": "Override applied successfully",
+        "train_id": train_id,
+        "audit_id": audit_record.id,
+        "override_reason": override_reason
+    }
+
+@app.get("/api/audit/decisions")
+async def get_decision_audit_trail(section_id: Optional[str] = None, limit: int = 50):
+    """Retrieve decision audit trail"""
+    filtered_audits = AUDIT_TRAIL
+    
+    if section_id:
+        filtered_audits = [a for a in AUDIT_TRAIL if a.section_id == section_id]
+    
+    # Return most recent first
+    recent_audits = sorted(filtered_audits, key=lambda x: x.timestamp, reverse=True)[:limit]
+    
+    return {
+        "audit_trail": [audit.dict() for audit in recent_audits],
+        "total_records": len(filtered_audits),
+        "section_filter": section_id
+    }
+
+@app.get("/api/performance/metrics")
+async def get_performance_metrics(section_id: Optional[str] = None):
+    """Get current performance metrics"""
+    # Calculate current metrics
+    current_time = datetime.now(timezone.utc)
+    
+    total_trains = len(SAMPLE_TRAINS)
+    on_time_trains = len([t for t in SAMPLE_TRAINS if t.delay_minutes <= 5])
+    delayed_trains = total_trains - on_time_trains
+    avg_delay = sum(t.delay_minutes for t in SAMPLE_TRAINS) / total_trains if total_trains > 0 else 0
+    
+    # Platform utilization (mock calculation)
+    assigned_platforms = len([t for t in SAMPLE_TRAINS if t.platform_assigned])
+    total_platforms = 6  # From section info
+    platform_utilization = (assigned_platforms / total_platforms) * 100
+    
+    # Controller override rate
+    overrides = len([t for t in SAMPLE_TRAINS if t.controller_override])
+    override_rate = (overrides / total_trains) * 100 if total_trains > 0 else 0
+    
+    metrics = PerformanceMetrics(
+        timestamp=current_time,
+        section_id=section_id or "SEC001",
+        total_trains=total_trains,
+        on_time_trains=on_time_trains,
+        delayed_trains=delayed_trains,
+        average_delay=avg_delay,
+        throughput_efficiency=85.0,  # Mock value
+        platform_utilization=platform_utilization,
+        signal_block_efficiency=92.0,  # Mock value
+        controller_overrides=overrides,
+        ai_recommendations_accepted=total_trains - overrides,
+        passenger_satisfaction_score=8.2  # Mock value
+    )
+    
+    PERFORMANCE_HISTORY.append(metrics)
+    
+    return {
+        "current_metrics": metrics.dict(),
+        "performance_trend": "improving",  # Mock trend analysis
+        "recommendations": [
+            "Consider increasing frequency on high-demand routes",
+            "Platform 3 showing higher utilization - monitor capacity",
+            "Signal block efficiency excellent - maintain current protocols"
+        ]
+    }
+
+@app.get("/api/sections/info")
+async def get_section_information():
+    """Get section controller information and infrastructure details"""
+    sections = [
+        SectionInfo(section_id="SEC001", controller_name="A.K. Singh", track_capacity=4, platform_count=6),
+        SectionInfo(section_id="SEC002", controller_name="R.P. Sharma", track_capacity=2, platform_count=4),
+        SectionInfo(section_id="SEC003", controller_name="M.K. Gupta", track_capacity=3, platform_count=5)
+    ]
+    
+    return {
+        "sections": [section.dict() for section in sections],
+        "total_sections": len(sections),
+        "infrastructure_summary": {
+            "total_platforms": sum(s.platform_count for s in sections),
+            "total_tracks": sum(s.track_capacity for s in sections),
+            "average_speed_limit": 110
+        }
+    }
 async def reset_system():
     """Reset all routes to normal state and clear disasters"""
     global ACTIVE_DISASTERS
