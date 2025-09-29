@@ -76,7 +76,7 @@ function App() {
     }, 5000);
     
     return () => clearInterval(interval);
-  }, [activeTab, simulationRunning]);
+  }, [activeTab]);
 
   const loadInitialData = async () => {
     try {
