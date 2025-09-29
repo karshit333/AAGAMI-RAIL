@@ -664,8 +664,16 @@ function App() {
                               {train.delay_minutes > 0 && (
                                 <div className="text-xs text-red-500">+{train.delay_minutes}m</div>
                               )}
+                              {train.speed_kmh && (
+                                <div className="text-xs text-blue-500">{train.speed_kmh} km/h</div>
+                              )}
                             </TableCell>
-                            <TableCell>{formatTime(train.planned_departure)}</TableCell>
+                            <TableCell>
+                              {formatTime(train.planned_departure)}
+                              {train.status && (
+                                <div className="text-xs capitalize text-gray-500">{train.status.replace('_', ' ')}</div>
+                              )}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
