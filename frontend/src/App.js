@@ -679,20 +679,12 @@ function App() {
                               <div className="text-sm">
                                 <div className="font-medium text-blue-600">{train.train_type || 'Express'}</div>
                                 <div className="text-xs text-gray-500">{train.train_category || 'Mail/Express'}</div>
-                                {train.section_id && (
-                                  <div className="text-xs text-purple-600">Sec: {train.section_id}</div>
-                                )}
                               </div>
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
                                 {train.route}
                               </Badge>
-                              {simulationRunning && train.current_position !== undefined && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Progress: {(train.current_position * 100).toFixed(0)}%
-                                </div>
-                              )}
                             </TableCell>
                             <TableCell>
                               <Badge variant={getPriorityVariant(train.priority)}>
