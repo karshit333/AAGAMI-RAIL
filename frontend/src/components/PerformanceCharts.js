@@ -6,36 +6,12 @@ import { Separator } from './ui/separator';
 import { BarChart3, Activity, Users, Clock, Zap, MapPin, Settings, TrendingUp, AlertTriangle } from 'lucide-react';
 
 const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sectionInfo, simulationState, realTimeTrains }) => {
-  const [performanceData, setPerformanceData] = useState(null);
-  const [sectionData, setSectionData] = useState(null);
   const [auditData, setAuditData] = useState(null);
 
-  // Fetch enhanced performance data
+  // Fetch audit trail data (not passed from parent)
   useEffect(() => {
-    fetchPerformanceMetrics();
-    fetchSectionInfo();
     fetchAuditTrail();
   }, []);
-
-  const fetchPerformanceMetrics = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/performance/metrics`);
-      const data = await response.json();
-      setPerformanceData(data);
-    } catch (error) {
-      console.error('Error fetching performance metrics:', error);
-    }
-  };
-
-  const fetchSectionInfo = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/sections/info`);
-      const data = await response.json();
-      setSectionData(data);
-    } catch (error) {
-      console.error('Error fetching section info:', error);
-    }
-  };
 
   const fetchAuditTrail = async () => {
     try {
