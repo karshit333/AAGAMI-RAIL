@@ -37,6 +37,23 @@ class Priority(str, Enum):
     MEDIUM = "Medium"
     LOW = "Low"
 
+class TrainType(str, Enum):
+    EXPRESS = "Express"           # Long-distance express trains
+    SUBURBAN = "Suburban"         # Local suburban trains
+    FREIGHT = "Freight"           # Goods trains
+    MAINTENANCE = "Maintenance"   # Maintenance vehicles
+    SPECIAL = "Special"          # Unscheduled specials
+
+class TrainCategory(str, Enum):
+    RAJDHANI = "Rajdhani"        # Premium express (highest priority)
+    SHATABDI = "Shatabdi"        # Day express (high priority)
+    MAIL_EXPRESS = "Mail/Express" # Regular express
+    PASSENGER = "Passenger"       # Regular passenger
+    LOCAL = "Local"              # Suburban local
+    GOODS = "Goods"              # Freight
+    MEMU = "MEMU"                # Multiple unit local
+    DMU = "DMU"                  # Diesel multiple unit
+
 class DisasterType(str, Enum):
     FLOOD = "flood"
     EQUIPMENT_FAILURE = "equipment_failure"
