@@ -423,8 +423,10 @@ function App() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Train</TableHead>
+                          <TableHead>Type & Category</TableHead>
                           <TableHead>Route</TableHead>
                           <TableHead>Priority</TableHead>
+                          <TableHead>Platform</TableHead>
                           <TableHead>Arrival</TableHead>
                           <TableHead>Departure</TableHead>
                         </TableRow>
@@ -433,11 +435,27 @@ function App() {
                         {trains.map((train) => (
                           <TableRow key={train.id}>
                             <TableCell className="font-medium">{train.id.slice(0, 6)}</TableCell>
-                            <TableCell>{train.route}</TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <div className="font-medium text-blue-600">{train.train_type || 'Express'}</div>
+                                <div className="text-xs text-gray-500">{train.train_category || 'Mail/Express'}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {train.route}
+                              </Badge>
+                            </TableCell>
                             <TableCell>
                               <Badge variant={getPriorityVariant(train.priority)}>
                                 {train.priority}
                               </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-gray-400" />
+                                <span className="text-sm">P{train.platform_assigned || 'TBA'}</span>
+                              </div>
                             </TableCell>
                             <TableCell>{formatTime(train.planned_arrival)}</TableCell>
                             <TableCell>{formatTime(train.planned_departure)}</TableCell>
