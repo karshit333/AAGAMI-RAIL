@@ -516,7 +516,109 @@ async def get_performance_metrics(section_id: Optional[str] = None):
         ]
     }
 
-@app.get("/api/sections/info")
+@app.get("/api/integration/tms")
+async def get_tms_data():
+    """Mock TMS (Traffic Management System) integration"""
+    return {
+        "system_status": "operational",
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+        "train_positions": [
+            {"train_id": "TRN001", "current_block": "BLK-A-01", "speed": 85, "signal_aspect": "green"},
+            {"train_id": "TRN002", "current_block": "BLK-A-03", "speed": 78, "signal_aspect": "yellow"},
+            {"train_id": "TRN003", "current_block": "BLK-B-02", "speed": 65, "signal_aspect": "green"}
+        ],
+        "signal_states": {
+            "total_signals": 24,
+            "green_signals": 18,
+            "yellow_signals": 4,
+            "red_signals": 2
+        },
+        "track_circuits": {
+            "total_circuits": 32,
+            "occupied": 8,
+            "clear": 24,
+            "faulty": 0
+        }
+    }
+
+@app.get("/api/integration/weather")
+async def get_weather_data():
+    """Mock Weather API integration"""
+    return {
+        "current_conditions": {
+            "temperature": 28,
+            "humidity": 65,
+            "wind_speed": 12,
+            "visibility": 8.5,
+            "precipitation": 0
+        },
+        "forecast_24h": [
+            {"hour": 9, "condition": "clear", "visibility": 10, "risk_level": "low"},
+            {"hour": 12, "condition": "partly_cloudy", "visibility": 9, "risk_level": "low"},
+            {"hour": 15, "condition": "light_rain", "visibility": 6, "risk_level": "medium"},
+            {"hour": 18, "condition": "heavy_rain", "visibility": 2, "risk_level": "high"}
+        ],
+        "alerts": [
+            {
+                "type": "fog_warning",
+                "severity": "medium",
+                "affected_sections": ["SEC001", "SEC002"],
+                "start_time": "05:00",
+                "end_time": "08:00",
+                "recommended_speed_limit": 60
+            }
+        ]
+    }
+
+@app.get("/api/integration/rolling_stock")
+async def get_rolling_stock_status():
+    """Mock Rolling Stock Management System integration"""
+    return {
+        "locomotive_status": [
+            {"loco_id": "WAP7-001", "train_id": "TRN001", "status": "active", "fuel_level": 85, "last_maintenance": "2024-01-15"},
+            {"loco_id": "WAG9-002", "train_id": "TRN005", "status": "active", "fuel_level": 72, "last_maintenance": "2024-01-18"},
+            {"loco_id": "WDM3A-003", "train_id": "TRN010", "status": "maintenance", "fuel_level": 45, "last_maintenance": "2024-01-20"}
+        ],
+        "coach_availability": {
+            "ac_coaches": {"available": 45, "total": 60},
+            "sleeper_coaches": {"available": 78, "total": 120},
+            "general_coaches": {"available": 23, "total": 40}
+        },
+        "maintenance_schedule": [
+            {"asset_id": "WAP7-004", "scheduled_date": "2024-01-25", "type": "A-class", "duration_hours": 8},
+            {"asset_id": "LHB-COACH-123", "scheduled_date": "2024-01-26", "type": "B-class", "duration_hours": 4}
+        ]
+    }
+
+@app.post("/api/integration/emergency_alert")
+async def send_emergency_alert(alert_data: Dict):
+    """Mock emergency alert system integration"""
+    alert_id = str(uuid.uuid4())
+    
+    emergency_alert = {
+        "alert_id": alert_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "type": alert_data.get("type", "general"),
+        "severity": alert_data.get("severity", "medium"),
+        "message": alert_data.get("message", "Emergency situation detected"),
+        "affected_sections": alert_data.get("affected_sections", []),
+        "recommended_actions": [
+            "Reduce train speeds to 50 km/h",
+            "Increase signal block spacing",
+            "Alert all section controllers",
+            "Prepare emergency response teams"
+        ],
+        "status": "active",
+        "acknowledgments": []
+    }
+    
+    # In a real system, this would trigger actual emergency protocols
+    return {
+        "message": "Emergency alert sent successfully",
+        "alert_id": alert_id,
+        "distribution_status": "sent_to_all_controllers",
+        "estimated_response_time": "2-3 minutes"
+    }
 async def get_section_information():
     """Get section controller information and infrastructure details"""
     sections = [
