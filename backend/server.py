@@ -1093,7 +1093,7 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                 
                 explanations.append(f"Train {train.id[:6]} delayed {delay_from_speed} min due to {speed_cause}")
             
-            # Normal conflict resolution for non-blocked routes
+            # Enhanced conflict resolution for non-blocked routes
             elif not is_blocked:
                 for scheduled_train in scheduled_trains:
                     scheduled_arr = time_to_minutes(scheduled_train.optimized_arrival)
@@ -1101,24 +1101,53 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                     current_arr = time_to_minutes(new_train.optimized_arrival)
                     current_dep = time_to_minutes(new_train.optimized_departure)
                     
-                    # Check for time overlap
+                    # Check for detailed time overlap analysis
+                    overlap_minutes = 0
                     if not (scheduled_dep <= current_arr or current_dep <= scheduled_arr):
+                        overlap_start = max(scheduled_arr, current_arr)
+                        overlap_end = min(scheduled_dep, current_dep)
+                        overlap_minutes = overlap_end - overlap_start
+                        
                         if priority_weights[new_train.priority] < priority_weights[scheduled_train.priority]:
-                            # Delay current train
+                            # Delay current train with detailed explanation
                             delay = scheduled_dep - current_arr + 5
                             new_train.delay_minutes += delay
                             new_train.status = "delayed" if delay < 15 else "critical"
                             new_train.optimized_arrival = minutes_to_time(current_arr + delay)
                             new_train.optimized_departure = minutes_to_time(current_dep + delay)
-                            explanations.append(f"Train {train.id[:6]} delayed {delay} min to give priority to {scheduled_train.priority.lower()} priority train {scheduled_train.id[:6]}")
+                            
+                            conflict_details = f"🚦 CONFLICT RESOLVED: {train.id[:6]} ({train.train_category}) had {overlap_minutes}min overlap with higher priority {scheduled_train.id[:6]} ({scheduled_train.train_category}) on route {route_id}"
+                            resolution_details = f"➡️ SOLUTION: Delayed {train.id[:6]} by {delay} minutes (from {train.planned_arrival}-{train.planned_departure} to {new_train.optimized_arrival}-{new_train.optimized_departure})"
+                            explanations.append(f"{conflict_details}. {resolution_details}")
+                            
                         elif priority_weights[new_train.priority] > priority_weights[scheduled_train.priority]:
-                            # Delay scheduled train
+                            # Delay scheduled train with detailed explanation
                             delay = current_dep - scheduled_arr + 5
                             scheduled_train.delay_minutes += delay
                             scheduled_train.status = "delayed" if delay < 15 else "critical"
                             scheduled_train.optimized_arrival = minutes_to_time(scheduled_arr + delay)
                             scheduled_train.optimized_departure = minutes_to_time(scheduled_dep + delay)
-                            explanations.append(f"Train {scheduled_train.id[:6]} delayed {delay} min to give priority to {new_train.priority.lower()} priority train {train.id[:6]}")
+                            
+                            conflict_details = f"🚦 CONFLICT RESOLVED: Higher priority {train.id[:6]} ({train.train_category}) had {overlap_minutes}min conflict with {scheduled_train.id[:6]} ({scheduled_train.train_category}) on route {route_id}"
+                            resolution_details = f"➡️ SOLUTION: Delayed {scheduled_train.id[:6]} by {delay} minutes to accommodate priority train"
+                            explanations.append(f"{conflict_details}. {resolution_details}")
+                            
+                        else:
+                            # Same priority - use arrival time for FIFO resolution
+                            if current_arr < scheduled_arr:
+                                delay = current_dep - scheduled_arr + 5
+                                scheduled_train.delay_minutes += delay
+                                scheduled_train.status = "delayed" if delay < 15 else "critical"
+                                scheduled_train.optimized_arrival = minutes_to_time(scheduled_arr + delay)
+                                scheduled_train.optimized_departure = minutes_to_time(scheduled_dep + delay)
+                                explanations.append(f"🕐 EQUAL PRIORITY RESOLUTION: {scheduled_train.id[:6]} delayed {delay} min - First-In-First-Out rule applied for same priority trains on {route_id}")
+                            else:
+                                delay = scheduled_dep - current_arr + 5
+                                new_train.delay_minutes += delay
+                                new_train.status = "delayed" if delay < 15 else "critical"
+                                new_train.optimized_arrival = minutes_to_time(current_arr + delay)
+                                new_train.optimized_departure = minutes_to_time(current_dep + delay)
+                                explanations.append(f"🕐 EQUAL PRIORITY RESOLUTION: {train.id[:6]} delayed {delay} min - First-In-First-Out rule applied for same priority trains on {route_id}")
             
             # Update train status
             if new_train.delay_minutes == 0:
