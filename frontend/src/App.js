@@ -535,14 +535,17 @@ function App() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Speed:</span>
                         <Select value={simulationState.speed.toString()} onValueChange={setSimulationSpeed}>
-                          <SelectTrigger className="w-20">
+                          <SelectTrigger className="w-24">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="0.25">0.25x</SelectItem>
                             <SelectItem value="0.5">0.5x</SelectItem>
                             <SelectItem value="1.0">1x</SelectItem>
                             <SelectItem value="2.0">2x</SelectItem>
                             <SelectItem value="5.0">5x</SelectItem>
+                            <SelectItem value="10.0">10x</SelectItem>
+                            <SelectItem value="20.0">20x</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
