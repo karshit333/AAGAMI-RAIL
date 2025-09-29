@@ -184,7 +184,7 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
       </div>
 
       {/* Section Controller Performance */}
-      {sectionData && (
+      {sectionInfo && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
