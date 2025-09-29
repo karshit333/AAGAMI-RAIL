@@ -23,16 +23,32 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
     }
   };
 
-  // Enhanced KPI calculations
-  const enhancedKPIs = {
-    totalTrains: trains.length,
-    onTimeTrains: trains.filter(t => t.delay_minutes <= 5).length,
-    delayedTrains: trains.filter(t => t.delay_minutes > 5).length,
-    avgDelay: trains.reduce((sum, t) => sum + t.delay_minutes, 0) / trains.length || 0,
+  // Use real-time trains data if available
+  const currentTrains = realTimeTrains && realTimeTrains.length > 0 ? realTimeTrains : trains;
+  
+  // Enhanced KPI calculations with real-time data
+  const enhancedKPIs = performanceMetrics ? {
+    totalTrains: performanceMetrics.total_trains || currentTrains.length,
+    onTimeTrains: performanceMetrics.on_time_trains || currentTrains.filter(t => t.delay_minutes <= 5).length,
+    delayedTrains: performanceMetrics.delayed_trains || currentTrains.filter(t => t.delay_minutes > 5).length,
+    avgDelay: performanceMetrics.average_delay || (currentTrains.reduce((sum, t) => sum + t.delay_minutes, 0) / currentTrains.length || 0),
+    throughputEfficiency: performanceMetrics.throughput_efficiency || (hasOptimized ? 87 : 65),
+    platformUtilization: performanceMetrics.platform_utilization || (currentTrains.filter(t => t.platform_assigned).length / 6 * 100),
+    aiRecommendations: performanceMetrics.ai_recommendations_accepted || currentTrains.filter(t => !t.controller_override).length,
+    controllerOverrides: performanceMetrics.controller_overrides || currentTrains.filter(t => t.controller_override).length,
+    signalBlockEfficiency: performanceMetrics.signal_block_efficiency || 95,
+    passengerSatisfaction: performanceMetrics.passenger_satisfaction_score || 8.5
+  } : {
+    totalTrains: currentTrains.length,
+    onTimeTrains: currentTrains.filter(t => t.delay_minutes <= 5).length,
+    delayedTrains: currentTrains.filter(t => t.delay_minutes > 5).length,
+    avgDelay: currentTrains.reduce((sum, t) => sum + t.delay_minutes, 0) / currentTrains.length || 0,
     throughputEfficiency: hasOptimized ? 87 : 65,
-    platformUtilization: trains.filter(t => t.platform_assigned).length / 6 * 100,
-    aiRecommendations: trains.filter(t => !t.controller_override).length,
-    controllerOverrides: trains.filter(t => t.controller_override).length
+    platformUtilization: currentTrains.filter(t => t.platform_assigned).length / 6 * 100,
+    aiRecommendations: currentTrains.filter(t => !t.controller_override).length,
+    controllerOverrides: currentTrains.filter(t => t.controller_override).length,
+    signalBlockEfficiency: 95,
+    passengerSatisfaction: 8.5
   };
 
   const trainTypeDistribution = trains.reduce((acc, train) => {
