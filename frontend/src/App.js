@@ -652,6 +652,30 @@ function App() {
                 </Card>
               )}
 
+              {/* AI Conflict Resolution Explanations */}
+              {explanations && explanations.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="h-5 w-5" />
+                      AI Conflict Resolution Details
+                    </CardTitle>
+                    <CardDescription>Step-by-step explanation of how conflicts were resolved</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                      {explanations.map((explanation, index) => (
+                        <div key={index} className="p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r">
+                          <div className="text-sm font-medium text-blue-900">
+                            Step {index + 1}: {explanation}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* What Changed Summary */}
               {whatChanged && (
                 <WhatChangedSummary 
