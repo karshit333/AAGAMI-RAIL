@@ -459,15 +459,7 @@ function App() {
                 </CardContent>
               </Card>
 
-              {/* Disaster Summary */}
-              {disasterSummary && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    {disasterSummary}
-                  </AlertDescription>
-                </Alert>
-              )}
+              {/* Disaster Summary - Removed to avoid misleading effectiveness messages */}
 
               {/* Enhanced AI Analysis & What Changed Summary */}
               {hasOptimized && (
