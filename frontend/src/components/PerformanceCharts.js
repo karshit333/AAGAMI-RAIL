@@ -218,57 +218,44 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
         </Card>
       </div>
 
-      {/* Section Controller Performance */}
-      {sectionInfo && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Section Controller Performance
-            </CardTitle>
-            <CardDescription>Multi-section infrastructure overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {sectionInfo.sections?.map((section) => (
-                <div key={section.section_id} className="p-4 border rounded-lg">
-                  <h4 className="font-medium text-sm text-blue-600">{section.section_id}</h4>
-                  <p className="text-xs text-gray-600 mb-2">{section.controller_name}</p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span>Track Capacity:</span>
-                      <span className="font-medium">{section.track_capacity} tracks</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Platforms:</span>
-                      <span className="font-medium">{section.platform_count} platforms</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Speed Limit:</span>
-                      <span className="font-medium">{section.speed_limit} km/h</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+      {/* Train Speed Analytics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            Train Speed Analytics
+          </CardTitle>
+          <CardDescription>Real-time train speed monitoring and performance</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">
+                {currentTrains.reduce((sum, t) => sum + (t.speed_kmh || 80), 0) / currentTrains.length || 0}
+              </p>
+              <p className="text-sm text-gray-600">Avg Speed (km/h)</p>
             </div>
-            <Separator className="my-4" />
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-blue-600">{sectionInfo.infrastructure_summary?.total_platforms}</p>
-                <p className="text-sm text-gray-600">Total Platforms</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-green-600">{sectionInfo.infrastructure_summary?.total_tracks}</p>
-                <p className="text-sm text-gray-600">Track Sections</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-purple-600">{sectionInfo.sections?.length}</p>
-                <p className="text-sm text-gray-600">Control Sections</p>
-              </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">
+                {Math.max(...currentTrains.map(t => t.speed_kmh || 80))}
+              </p>
+              <p className="text-sm text-gray-600">Max Speed (km/h)</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <p className="text-2xl font-bold text-purple-600">
+                {currentTrains.filter(t => (t.speed_kmh || 80) < 60).length}
+              </p>
+              <p className="text-sm text-gray-600">Slow Trains</p>
+            </div>
+            <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <p className="text-2xl font-bold text-orange-600">
+                {((currentTrains.reduce((sum, t) => sum + (t.speed_kmh || 80), 0) / currentTrains.length) / 120 * 100).toFixed(1)}%
+              </p>
+              <p className="text-sm text-gray-600">Speed Efficiency</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* AI vs Manual Decision Analysis */}
       <Card>
