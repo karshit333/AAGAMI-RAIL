@@ -179,7 +179,7 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
                   <div className="text-right">
                     <span className="font-medium">{count}</span>
                     <span className="text-sm text-gray-500 ml-1">
-                      ({((count / trains.length) * 100).toFixed(1)}%)
+                      ({((count / currentTrains.length) * 100).toFixed(1)}%)
                     </span>
                   </div>
                 </div>
@@ -208,7 +208,7 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
                   <div className="text-right">
                     <span className="font-medium">{count}</span>
                     <span className="text-sm text-gray-500 ml-1">
-                      ({((count / trains.length) * 100).toFixed(1)}%)
+                      ({((count / currentTrains.length) * 100).toFixed(1)}%)
                     </span>
                   </div>
                 </div>
