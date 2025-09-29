@@ -1130,9 +1130,12 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                             scheduled_train.optimized_arrival = minutes_to_time(scheduled_arr + delay)
                             scheduled_train.optimized_departure = minutes_to_time(scheduled_dep + delay)
                             
-                            conflict_details = f"🚦 CONFLICT RESOLVED: Higher priority {train.id[:6]} ({train.train_category}) had {overlap_minutes}min conflict with {scheduled_train.id[:6]} ({scheduled_train.train_category}) on route {route_id}"
-                            resolution_details = f"➡️ SOLUTION: Delayed {scheduled_train.id[:6]} by {delay} minutes to accommodate priority train"
-                            explanations.append(f"{conflict_details}. {resolution_details}")
+                            # Enhanced explanation for priority train accommodation
+                            what_changed = f"PRIORITY ADJUSTMENT: {scheduled_train.id[:6]} ({scheduled_train.train_category}) delayed by {delay} minutes"
+                            why_changed = f"REASON: Higher priority {train.id[:6]} ({train.train_category}) required immediate slot on route {route_id}"
+                            schedule_impact = f"IMPACT: {scheduled_train.id[:6]} rescheduled from original slot to accommodate priority service"
+                            passenger_impact = f"AFFECTED: ~{scheduled_train.details.passenger_count if scheduled_train.details else 300} passengers experience delay for priority train"
+                            explanations.append(f"⭐ {what_changed} | 🚨 {why_changed} | 📅 {schedule_impact} | 👥 {passenger_impact}")
                             
                         else:
                             # Same priority - use arrival time for FIFO resolution
