@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { BarChart3, Activity, Users, Clock, Zap, MapPin, Settings, TrendingUp, AlertTriangle } from 'lucide-react';
 
-const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sectionInfo, simulationState, realTimeTrains }) => {
+const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sectionInfo }) => {
   const [auditData, setAuditData] = useState(null);
 
   // Fetch audit trail data (not passed from parent)
