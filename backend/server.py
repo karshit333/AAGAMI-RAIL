@@ -322,7 +322,7 @@ SAMPLE_TRAINS = [
     Train(id="TRN010", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.SHATABDI, planned_arrival="08:25", planned_departure="08:40", route="D-E", section_id="SEC003", platform_assigned=4, details=generate_train_details("D-E"), speed_kmh=115),
     
     # B-E Route - Cross conflicts
-    Train(id="TRN011", priority=Priority.MEDIUM, train_type=TrainType.SUBURBAN, train_category=TrainCategory.MEMU, planned_arrival="08:20", planned_departure="08:35", route="B-E", section_id="SEC002", platform_assigned=5, details=generate_train_details("B-E"), speed_kmh=85),
+    Train(id="TRN011", priority=Priority.MEDIUM, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:20", planned_departure="08:35", route="B-E", section_id="SEC002", platform_assigned=5, details=generate_train_details("B-E"), speed_kmh=85),
     Train(id="TRN012", priority=Priority.LOW, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:28", planned_departure="08:50", route="B-E", section_id="SEC002", platform_assigned=6, details=generate_train_details("B-E"), speed_kmh=75),  # CONFLICT with TRN011
     
     # A-C Route - Alternative route trains
