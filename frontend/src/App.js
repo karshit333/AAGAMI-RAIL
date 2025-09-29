@@ -243,7 +243,19 @@ function App() {
             }`}
           >
             <BarChart3 className="h-4 w-4" />
-            Dashboard
+            Traffic Control
+          </button>
+          
+          <button
+            onClick={() => setActiveTab("performance")}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+              activeTab === "performance" 
+                ? "bg-blue-50 text-blue-700 font-medium" 
+                : "text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            <Activity className="h-4 w-4" />
+            Performance Analytics
           </button>
           
           <button
@@ -268,18 +280,6 @@ function App() {
           >
             <AlertTriangle className="h-4 w-4" />
             Disaster Mgmt
-          </button>
-          
-          <button
-            onClick={() => setActiveTab("performance")}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-              activeTab === "performance" 
-                ? "bg-blue-50 text-blue-700 font-medium" 
-                : "text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <Activity className="h-4 w-4" />
-            Performance
           </button>
           
           <button
