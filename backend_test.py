@@ -1568,6 +1568,276 @@ class AagamiRailAPITester:
         print("="*80)
         return None
 
+    def test_performance_metrics_endpoint(self):
+        """Test GET /api/performance/metrics endpoint for enhanced performance data"""
+        try:
+            response = requests.get(f"{self.api_url}/performance/metrics", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                metrics_data = response.json()
+                required_fields = ['current_metrics', 'performance_trend', 'recommendations']
+                
+                if all(field in metrics_data for field in required_fields):
+                    current_metrics = metrics_data['current_metrics']
+                    
+                    # Check enhanced metrics fields
+                    enhanced_fields = [
+                        'total_trains', 'on_time_trains', 'delayed_trains', 'average_delay',
+                        'throughput_efficiency', 'platform_utilization', 'signal_block_efficiency',
+                        'controller_overrides', 'ai_recommendations_accepted', 'passenger_satisfaction_score'
+                    ]
+                    
+                    if all(field in current_metrics for field in enhanced_fields):
+                        self.log_test("Performance Metrics Endpoint", True, 
+                                    f"Enhanced performance metrics available with {len(enhanced_fields)} key indicators")
+                        return metrics_data
+                    else:
+                        missing_fields = [f for f in enhanced_fields if f not in current_metrics]
+                        self.log_test("Performance Metrics Endpoint", False, f"Missing enhanced fields: {missing_fields}")
+                else:
+                    missing_fields = [f for f in required_fields if f not in metrics_data]
+                    self.log_test("Performance Metrics Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_test("Performance Metrics Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Performance Metrics Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_sections_info_endpoint(self):
+        """Test GET /api/sections/info endpoint for section controller information"""
+        try:
+            response = requests.get(f"{self.api_url}/sections/info", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                sections_data = response.json()
+                required_fields = ['sections', 'total_sections', 'infrastructure_summary']
+                
+                if all(field in sections_data for field in required_fields):
+                    sections = sections_data['sections']
+                    
+                    if isinstance(sections, list) and len(sections) >= 3:
+                        # Check section structure
+                        section_fields = [
+                            'section_id', 'controller_name', 'track_capacity', 'platform_count',
+                            'signal_blocks', 'junction_type', 'speed_limit'
+                        ]
+                        
+                        first_section = sections[0]
+                        if all(field in first_section for field in section_fields):
+                            self.log_test("Sections Info Endpoint", True, 
+                                        f"Retrieved {len(sections)} sections with controller information")
+                            return sections_data
+                        else:
+                            missing_fields = [f for f in section_fields if f not in first_section]
+                            self.log_test("Sections Info Endpoint", False, f"Missing section fields: {missing_fields}")
+                    else:
+                        self.log_test("Sections Info Endpoint", False, f"Expected at least 3 sections, got {len(sections) if isinstance(sections, list) else 'non-list'}")
+                else:
+                    missing_fields = [f for f in required_fields if f not in sections_data]
+                    self.log_test("Sections Info Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_test("Sections Info Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Sections Info Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_audit_decisions_endpoint(self):
+        """Test GET /api/audit/decisions endpoint for audit trail data"""
+        try:
+            response = requests.get(f"{self.api_url}/audit/decisions", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                audit_data = response.json()
+                required_fields = ['audit_trail', 'total_records']
+                
+                if all(field in audit_data for field in required_fields):
+                    audit_trail = audit_data['audit_trail']
+                    total_records = audit_data['total_records']
+                    
+                    if isinstance(audit_trail, list) and isinstance(total_records, int):
+                        # Check audit record structure if any exist
+                        if len(audit_trail) > 0:
+                            audit_fields = [
+                                'id', 'timestamp', 'controller_id', 'section_id', 'decision_type',
+                                'train_ids', 'override_applied'
+                            ]
+                            first_audit = audit_trail[0]
+                            
+                            if all(field in first_audit for field in audit_fields):
+                                self.log_test("Audit Decisions Endpoint", True, 
+                                            f"Audit trail available with {total_records} records")
+                            else:
+                                missing_fields = [f for f in audit_fields if f not in first_audit]
+                                self.log_test("Audit Decisions Endpoint", False, f"Missing audit fields: {missing_fields}")
+                        else:
+                            self.log_test("Audit Decisions Endpoint", True, 
+                                        f"Audit trail endpoint working (currently {total_records} records)")
+                        return audit_data
+                    else:
+                        self.log_test("Audit Decisions Endpoint", False, "Invalid audit_trail or total_records format")
+                else:
+                    missing_fields = [f for f in required_fields if f not in audit_data]
+                    self.log_test("Audit Decisions Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_test("Audit Decisions Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Audit Decisions Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_controller_override_endpoint(self):
+        """Test POST /api/controller/override endpoint for controller override functionality"""
+        try:
+            # Test controller override functionality
+            override_data = {
+                "train_id": "TRN001",
+                "reason": "Controller decision for priority adjustment",
+                "new_schedule": {
+                    "arrival": "08:05",
+                    "departure": "08:20",
+                    "platform": 2
+                },
+                "controller_id": "CTRL001"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/controller/override",
+                json=override_data,
+                headers={'Content-Type': 'application/json'},
+                timeout=10
+            )
+            success = response.status_code == 200
+            
+            if success:
+                override_result = response.json()
+                required_fields = ['message', 'train_id', 'audit_id', 'override_reason']
+                
+                if all(field in override_result for field in required_fields):
+                    train_id = override_result['train_id']
+                    audit_id = override_result['audit_id']
+                    
+                    if train_id == "TRN001" and audit_id:
+                        self.log_test("Controller Override Endpoint", True, 
+                                    f"Override applied successfully for {train_id}, audit ID: {audit_id[:8]}...")
+                        return override_result
+                    else:
+                        self.log_test("Controller Override Endpoint", False, "Invalid train_id or missing audit_id")
+                else:
+                    missing_fields = [f for f in required_fields if f not in override_result]
+                    self.log_test("Controller Override Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                try:
+                    error_detail = response.json()
+                    self.log_test("Controller Override Endpoint", False, f"Status code: {response.status_code}, Error: {error_detail}")
+                except:
+                    self.log_test("Controller Override Endpoint", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Controller Override Endpoint", False, f"Exception: {str(e)}")
+        
+        return None
+
+    def test_mock_integrations(self):
+        """Test mock integration endpoints (TMS, Weather, Rolling Stock)"""
+        integration_endpoints = [
+            ("TMS Integration", "/integration/tms", ['system_status', 'train_positions', 'signal_states']),
+            ("Weather Integration", "/integration/weather", ['current_conditions', 'forecast_24h', 'alerts']),
+            ("Rolling Stock Integration", "/integration/rolling_stock", ['locomotive_status', 'coach_availability', 'maintenance_schedule'])
+        ]
+        
+        all_passed = True
+        results = []
+        
+        for name, endpoint, required_fields in integration_endpoints:
+            try:
+                response = requests.get(f"{self.api_url}{endpoint}", timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if all(field in data for field in required_fields):
+                        results.append(f"✅ {name}: All fields present")
+                    else:
+                        missing_fields = [f for f in required_fields if f not in data]
+                        results.append(f"❌ {name}: Missing {missing_fields}")
+                        all_passed = False
+                else:
+                    results.append(f"❌ {name}: HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                results.append(f"❌ {name}: Exception {str(e)}")
+                all_passed = False
+        
+        if all_passed:
+            self.log_test("Mock Integration Endpoints", True, f"All integrations working: {'; '.join(results)}")
+        else:
+            self.log_test("Mock Integration Endpoints", False, f"Integration issues: {'; '.join(results)}")
+        
+        return all_passed
+
+    def test_enhanced_train_classifications(self):
+        """Test /api/trains endpoint for enhanced train classifications and infrastructure constraints"""
+        try:
+            response = requests.get(f"{self.api_url}/trains", timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                trains = response.json()
+                
+                if isinstance(trains, list) and len(trains) >= 10:
+                    enhancement_test_passed = True
+                    enhancement_details = []
+                    
+                    for train in trains:
+                        train_id = train.get('id', '')[:6]
+                        
+                        # Check for enhanced train classifications
+                        enhanced_fields = ['train_type', 'train_category', 'section_id', 'controller_override', 'details']
+                        missing_enhanced = [f for f in enhanced_fields if f not in train]
+                        
+                        if missing_enhanced:
+                            enhancement_test_passed = False
+                            enhancement_details.append(f"Train {train_id}: Missing {missing_enhanced}")
+                        else:
+                            # Check train_type and train_category values
+                            train_type = train.get('train_type')
+                            train_category = train.get('train_category')
+                            
+                            valid_types = ['Express', 'Suburban', 'Freight', 'Maintenance', 'Special']
+                            valid_categories = ['Rajdhani', 'Shatabdi', 'Mail/Express', 'Passenger', 'Local', 'Goods', 'MEMU', 'DMU']
+                            
+                            if train_type in valid_types and train_category in valid_categories:
+                                enhancement_details.append(f"✅ Train {train_id}: {train_type}/{train_category}")
+                            else:
+                                enhancement_test_passed = False
+                                enhancement_details.append(f"❌ Train {train_id}: Invalid type/category")
+                    
+                    if enhancement_test_passed:
+                        self.log_test("Enhanced Train Classifications", True, 
+                                    f"All trains have enhanced classifications: {len(enhancement_details)} trains verified")
+                        return trains
+                    else:
+                        self.log_test("Enhanced Train Classifications", False, 
+                                    f"Classification issues: {'; '.join(enhancement_details[:3])}...")
+                else:
+                    self.log_test("Enhanced Train Classifications", False, f"Expected at least 10 trains, got {len(trains) if isinstance(trains, list) else 'non-list'}")
+            else:
+                self.log_test("Enhanced Train Classifications", False, f"Status code: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Enhanced Train Classifications", False, f"Exception: {str(e)}")
+        
+        return None
+
     def run_all_tests(self):
         """Run all backend API tests - Enhanced for AAGAMI RAIL requirements"""
         print("🚂 AAGAMI RAIL Backend API Testing Suite")
