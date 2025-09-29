@@ -299,6 +299,13 @@ function App() {
     }
   };
 
+  const getTrainStatusColor = (train) => {
+    if (train.status === "critical" || train.delay_minutes > 10) return "bg-red-500";
+    if (train.status === "delayed" || train.delay_minutes > 5) return "bg-yellow-500";
+    if (train.rerouted) return "bg-blue-500";
+    return "bg-green-500"; // on_time
+  };
+
   const formatTime = (timeStr) => {
     return timeStr || "N/A";
   };
