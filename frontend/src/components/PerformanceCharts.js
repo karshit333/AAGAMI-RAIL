@@ -65,6 +65,41 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
 
   return (
     <div className="space-y-6">
+      {/* Real-time Simulation Status */}
+      {simulationState && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${simulationState.state === 'playing' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className="font-medium">
+                    Simulation {simulationState.state === 'playing' ? 'ACTIVE' : 'PAUSED'}
+                  </span>
+                </div>
+                <Badge variant={simulationState.state === 'playing' ? 'default' : 'secondary'}>
+                  {simulationState.speed}x Speed
+                </Badge>
+                <div className="text-sm text-gray-600">
+                  Time: <span className="font-mono">{simulationState.current_time}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-6 text-sm">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">{enhancedKPIs.signalBlockEfficiency}%</div>
+                  <div className="text-xs text-gray-500">Signal Efficiency</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">{enhancedKPIs.passengerSatisfaction}/10</div>
+                  <div className="text-xs text-gray-500">Satisfaction</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Enhanced KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
