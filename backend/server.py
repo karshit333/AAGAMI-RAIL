@@ -316,7 +316,7 @@ SAMPLE_TRAINS = [
     # C-D Route - More conflicts
     Train(id="TRN007", priority=Priority.LOW, train_type=TrainType.FREIGHT, train_category=TrainCategory.GOODS, planned_arrival="08:20", planned_departure="08:45", route="C-D", section_id="SEC003", platform_assigned=1, details=generate_train_details("C-D"), speed_kmh=65),
     Train(id="TRN008", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.MAIL_EXPRESS, planned_arrival="08:30", planned_departure="08:45", route="C-D", section_id="SEC003", platform_assigned=2, details=generate_train_details("C-D"), speed_kmh=105),  # CONFLICT with TRN007
-    Train(id="TRN009", priority=Priority.HIGH, train_type=TrainType.MAINTENANCE, train_category=TrainCategory.PASSENGER, planned_arrival="08:35", planned_departure="08:55", route="C-D", section_id="SEC003", platform_assigned=3, details=generate_train_details("C-D"), speed_kmh=70),  # CONFLICT with TRN008
+    Train(id="TRN009", priority=Priority.HIGH, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:35", planned_departure="08:55", route="C-D", section_id="SEC003", platform_assigned=3, details=generate_train_details("C-D"), speed_kmh=70),  # CONFLICT with TRN008
     
     # D-E Route
     Train(id="TRN010", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.SHATABDI, planned_arrival="08:25", planned_departure="08:40", route="D-E", section_id="SEC003", platform_assigned=4, details=generate_train_details("D-E"), speed_kmh=115),
