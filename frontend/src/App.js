@@ -651,6 +651,43 @@ function App() {
 
               {/* AI Conflict Resolution Details section removed - reduces clutter */}
 
+              {/* Enhanced AI Decision Explanations */}
+              {explanations && explanations.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Brain className="h-5 w-5" />
+                      AI Decision Explanations
+                    </CardTitle>
+                    <CardDescription>
+                      Full transparency: What changed, why it changed, and the impact on the schedule
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {explanations.map((explanation, index) => {
+                        const parts = explanation.split(' | ');
+                        const whatChanged = parts[0] || '';
+                        const whyChanged = parts[1] || '';
+                        const scheduleImpact = parts[2] || '';
+                        const passengerImpact = parts[3] || '';
+                        
+                        return (
+                          <div key={index} className="p-4 border rounded-lg bg-blue-50">
+                            <div className="space-y-2">
+                              <div className="text-sm font-medium text-blue-900">{whatChanged}</div>
+                              {whyChanged && <div className="text-sm text-gray-700">{whyChanged}</div>}
+                              {scheduleImpact && <div className="text-sm text-purple-700">{scheduleImpact}</div>}
+                              {passengerImpact && <div className="text-sm text-orange-700">{passengerImpact}</div>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* What Changed Summary */}
               {whatChanged && (
                 <WhatChangedSummary 
