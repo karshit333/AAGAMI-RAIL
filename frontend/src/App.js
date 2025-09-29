@@ -776,11 +776,9 @@ function App() {
                 <TrainMap
                   stations={stations}
                   routes={routes}
-                  trains={realTimeTrains.length > 0 ? realTimeTrains : (hasOptimized ? optimizedTrains : trains)}
+                  trains={hasOptimized ? optimizedTrains : trains}
                   getPriorityColor={getPriorityColor}
                   onTrainClick={handleTrainClick}
-                  simulationRunning={simulationRunning}
-                  currentTime={simulationState.current_time}
                 />
               </CardContent>
             </Card>
