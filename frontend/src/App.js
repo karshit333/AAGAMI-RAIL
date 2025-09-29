@@ -69,16 +69,24 @@ function App() {
   useEffect(() => {
     loadInitialData();
     loadSystemAlerts();
+    loadPerformanceMetrics();
+    loadSectionInfo();
     
     // Set up polling for real-time updates
     const interval = setInterval(() => {
       if (activeTab === "dashboard") {
         loadSystemAlerts();
+        if (simulationRunning) {
+          updateSimulationState();
+        }
       }
-    }, 5000);
+      if (activeTab === "analytics") {
+        loadPerformanceMetrics();
+      }
+    }, simulationRunning ? 2000 : 5000); // Faster updates when simulation is running
     
     return () => clearInterval(interval);
-  }, [activeTab]);
+  }, [activeTab, simulationRunning]);
 
   const loadInitialData = async () => {
     try {
