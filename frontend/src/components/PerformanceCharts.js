@@ -283,11 +283,11 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
                 </div>
               </div>
               
-              {performanceData?.current_metrics?.recommendations && (
+              {performanceMetrics?.recommendations && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <h5 className="font-medium text-sm mb-2">AI Recommendations:</h5>
                   <ul className="text-xs text-gray-700 space-y-1">
-                    {performanceData.current_metrics.recommendations.slice(0, 3).map((rec, idx) => (
+                    {performanceMetrics.recommendations.slice(0, 3).map((rec, idx) => (
                       <li key={idx} className="flex items-start gap-1">
                         <span className="text-blue-600 mt-0.5">•</span>
                         {rec}
