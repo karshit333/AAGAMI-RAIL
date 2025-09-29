@@ -453,14 +453,7 @@ function App() {
         <main className="p-6">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              {/* Alert System */}
-              {systemAlerts.length > 0 && (
-                <AlertSystem 
-                  alerts={systemAlerts}
-                  onDismissAlert={handleDismissAlert}
-                  onAcknowledgeAlert={handleAcknowledgeAlert}
-                />
-              )}
+              {/* Smart Alert System Removed - Less clutter on dashboard */}
 
               {/* KPI Cards */}
               {hasOptimized && (
