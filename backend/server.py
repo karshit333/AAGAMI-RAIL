@@ -619,6 +619,7 @@ async def send_emergency_alert(alert_data: Dict):
         "distribution_status": "sent_to_all_controllers",
         "estimated_response_time": "2-3 minutes"
     }
+@app.get("/api/sections/info")
 async def get_section_information():
     """Get section controller information and infrastructure details"""
     sections = [
@@ -636,6 +637,8 @@ async def get_section_information():
             "average_speed_limit": 110
         }
     }
+
+@app.post("/api/debug/reset")
 async def reset_system():
     """Reset all routes to normal state and clear disasters"""
     global ACTIVE_DISASTERS
