@@ -81,20 +81,40 @@ class TrainDetails(BaseModel):
     capacity: int = 400
     current_load: int = 320
     origin: str = "Delhi Junction"
-    destination: str = "Lucknow Junction"
-    stops: List[str] = []
-    fuel_consumption: float = 2.5  # liters per km
+    destination: str = "Mumbai Central"
+    fuel_consumption: float = 2.5  # L/km
     passenger_count: int = 320
     coach_count: int = 12
     engine_type: str = "WAP-7"
     max_speed: int = 140  # km/h
+    length: int = 350  # meters
+    weight: int = 800  # tons
 
+class SectionInfo(BaseModel):
+    section_id: str
+    controller_name: str = "Section Controller"
+    track_capacity: int = 4  # number of parallel tracks
+    signal_blocks: int = 8   # number of signal blocks
+    platform_count: int = 6  # available platforms
+    junction_type: str = "Double Line"  # Single/Double/Multiple
+    gradient: float = 0.5    # percentage gradient
+    speed_limit: int = 110   # km/h section speed limit
+    
+class InfrastructureConstraint(BaseModel):
+    constraint_type: str  # platform, signal, junction, gradient
+    location: str
+    capacity_limit: int
+    current_utilization: int = 0
+    
 class Train(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     priority: Priority
+    train_type: TrainType = TrainType.EXPRESS
+    train_category: TrainCategory = TrainCategory.MAIL_EXPRESS
     planned_arrival: str  # HH:MM format
     planned_departure: str  # HH:MM format
     route: str  # e.g., "A-B", "B-C", etc.
+    section_id: str = "SEC001"  # Section controller assignment
     delay_minutes: int = 0
     optimized_arrival: Optional[str] = None
     optimized_departure: Optional[str] = None
@@ -103,10 +123,14 @@ class Train(BaseModel):
     alternate_path_stations: Optional[List[str]] = None  # List of stations in alternate path
     alternate_route_segments: Optional[List[str]] = None  # List of route segments in alternate path
     explanation: Optional[str] = None
+    controller_override: bool = False  # Manual controller decision
+    override_reason: Optional[str] = None  # Reason for override
     details: TrainDetails = Field(default_factory=TrainDetails)
     current_position: float = 0.0  # 0.0 to 1.0 along route
     speed_kmh: int = 80
     status: str = "on_time"  # on_time, delayed, critical, blocked
+    platform_assigned: Optional[int] = None  # Platform number
+    signal_clearance: bool = True  # Signal permission status
 
 class Alert(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
