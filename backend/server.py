@@ -1058,11 +1058,12 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                     new_train.optimized_arrival = minutes_to_time(time_to_minutes(train.planned_arrival) + rerouting_delay)
                     new_train.optimized_departure = minutes_to_time(time_to_minutes(train.planned_departure) + rerouting_delay)
                     
-                    explanations.append(
-                        f"Train {train.id[:6]} rerouted via {alt_path['path_description']} "
-                        f"(routes: {alt_path['route_description']}) due to {route_id} blockage "
-                        f"(+{rerouting_delay} min for {alt_path['path_length']}-hop alternate path)"
-                    )
+                    # Enhanced rerouting explanation with full transparency
+                    what_changed = f"ROUTE CHANGE: {train.id[:6]} rerouted via {alt_path['path_description']}"
+                    why_changed = f"REASON: Original route {route_id} is blocked, alternate path required"
+                    schedule_impact = f"IMPACT: +{rerouting_delay} minutes delay due to {alt_path['path_length']}-hop alternate route"
+                    passenger_impact = f"AFFECTED: ~{train.details.passenger_count if train.details else 300} passengers on longer route"
+                    explanations.append(f"🛤️ {what_changed} | 🚧 {why_changed} | ⏱️ {schedule_impact} | 👥 {passenger_impact}")
                     print(f"✅ {train.id[:6]} successfully rerouted via {alt_path['path_description']}")
                 else:
                     # No alternate route - apply significant delay
