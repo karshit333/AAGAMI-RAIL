@@ -1115,9 +1115,12 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                             new_train.optimized_arrival = minutes_to_time(current_arr + delay)
                             new_train.optimized_departure = minutes_to_time(current_dep + delay)
                             
-                            conflict_details = f"🚦 CONFLICT RESOLVED: {train.id[:6]} ({train.train_category}) had {overlap_minutes}min overlap with higher priority {scheduled_train.id[:6]} ({scheduled_train.train_category}) on route {route_id}"
-                            resolution_details = f"➡️ SOLUTION: Delayed {train.id[:6]} by {delay} minutes (from {train.planned_arrival}-{train.planned_departure} to {new_train.optimized_arrival}-{new_train.optimized_departure})"
-                            explanations.append(f"{conflict_details}. {resolution_details}")
+                            # Enhanced explanation with full transparency
+                            what_changed = f"SCHEDULE CHANGE: {train.id[:6]} ({train.train_category}) delayed by {delay} minutes"
+                            why_changed = f"REASON: Higher priority {scheduled_train.id[:6]} ({scheduled_train.train_category}) had scheduling conflict with {overlap_minutes}-minute overlap on route {route_id}"
+                            schedule_impact = f"IMPACT: Original schedule {train.planned_arrival}-{train.planned_departure} → New schedule {new_train.optimized_arrival}-{new_train.optimized_departure}"
+                            passenger_impact = f"AFFECTED: ~{train.details.passenger_count if train.details else 300} passengers delayed"
+                            explanations.append(f"🔄 {what_changed} | 🎯 {why_changed} | 📅 {schedule_impact} | 👥 {passenger_impact}")
                             
                         elif priority_weights[new_train.priority] > priority_weights[scheduled_train.priority]:
                             # Delay scheduled train with detailed explanation
