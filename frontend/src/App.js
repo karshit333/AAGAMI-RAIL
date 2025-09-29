@@ -115,6 +115,67 @@ function App() {
     }
   };
 
+  const loadPerformanceMetrics = async () => {
+    try {
+      const response = await axios.get(`${API}/performance/metrics`);
+      setPerformanceMetrics(response.data);
+    } catch (error) {
+      console.error("Error loading performance metrics:", error);
+    }
+  };
+
+  const loadSectionInfo = async () => {
+    try {
+      const response = await axios.get(`${API}/sections/info`);
+      setSectionInfo(response.data);
+    } catch (error) {
+      console.error("Error loading section info:", error);
+    }
+  };
+
+  const updateSimulationState = async () => {
+    try {
+      // Update train positions and status
+      const trainsRes = await axios.get(`${API}/trains`);
+      const updatedTrains = trainsRes.data.map(train => ({
+        ...train,
+        current_position: Math.min(train.current_position + 0.02 * simulationState.speed, 1.0),
+        status: train.delay_minutes > 10 ? "critical" : train.delay_minutes > 5 ? "delayed" : "on_time"
+      }));
+      
+      setRealTimeTrains(updatedTrains);
+      
+      // Update simulation time
+      const currentMinutes = parseInt(simulationState.current_time.split(':')[0]) * 60 + 
+                           parseInt(simulationState.current_time.split(':')[1]);
+      const newMinutes = currentMinutes + (1 * simulationState.speed);
+      const newHours = Math.floor(newMinutes / 60) % 24;
+      const newMins = newMinutes % 60;
+      
+      setSimulationState(prev => ({
+        ...prev,
+        current_time: `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`
+      }));
+    } catch (error) {
+      console.error("Error updating simulation:", error);
+    }
+  };
+
+  const toggleSimulation = () => {
+    setSimulationRunning(!simulationRunning);
+    setSimulationState(prev => ({
+      ...prev,
+      state: simulationRunning ? "paused" : "playing"
+    }));
+  };
+
+  const setSimulationSpeed = (speed) => {
+    setSimulationState(prev => ({
+      ...prev,
+      speed: parseFloat(speed)
+    }));
+  };
+
   const handleSimulationUpdate = () => {
     loadSystemAlerts();
   };
