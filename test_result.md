@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-## user_problem_statement: Complete pending tasks for AAGAMI RAIL prototype - 1) Show both original and optimized ETA in schedule table, 2) Remove duration field from disaster designer, 3) Ensure disaster effects reflect on map, 4) Standardize train IDs to TRN001-TRN010 format
+## user_problem_statement: Test the current backend API endpoints to understand what enhanced features are available. Verify new endpoints for performance metrics, section controller information, audit trail data, controller override functionality, and mock integrations. Test existing endpoints for enhanced train classifications and infrastructure constraints.
 
 ## frontend:
   - task: "Update AI optimized schedule table to show both original ETA and current (optimized) ETA"
