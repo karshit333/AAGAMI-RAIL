@@ -301,18 +301,36 @@ SAMPLE_ROUTES = [
     Route(id="A-E", stations=["A", "E"], path=[{"x": 100, "y": 200}, {"x": 300, "y": 100}, {"x": 500, "y": 100}], blocked=False),
 ]
 
-# Enhanced sample trains with realistic train categories and types
+# Enhanced sample trains with realistic conflicts to test AI optimization
 SAMPLE_TRAINS = [
-    Train(id="TRN001", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.RAJDHANI, planned_arrival="08:00", planned_departure="08:15", route="A-B", section_id="SEC001", platform_assigned=1, details=generate_train_details("A-B")),
-    Train(id="TRN002", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.SHATABDI, planned_arrival="08:10", planned_departure="08:25", route="A-B", section_id="SEC001", platform_assigned=2, details=generate_train_details("A-B")),
-    Train(id="TRN003", priority=Priority.MEDIUM, train_type=TrainType.EXPRESS, train_category=TrainCategory.MAIL_EXPRESS, planned_arrival="08:05", planned_departure="08:20", route="B-C", section_id="SEC002", platform_assigned=3, details=generate_train_details("B-C")),
-    Train(id="TRN004", priority=Priority.MEDIUM, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:30", planned_departure="08:45", route="B-C", section_id="SEC002", platform_assigned=4, details=generate_train_details("B-C")),
-    Train(id="TRN005", priority=Priority.LOW, train_type=TrainType.FREIGHT, train_category=TrainCategory.GOODS, planned_arrival="08:15", planned_departure="08:30", route="C-D", section_id="SEC003", platform_assigned=5, details=generate_train_details("C-D")),
-    Train(id="TRN006", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.MAIL_EXPRESS, planned_arrival="08:20", planned_departure="08:35", route="D-E", section_id="SEC003", platform_assigned=1, details=generate_train_details("D-E")),
-    Train(id="TRN007", priority=Priority.MEDIUM, train_type=TrainType.SUBURBAN, train_category=TrainCategory.MEMU, planned_arrival="08:25", planned_departure="08:40", route="B-E", section_id="SEC002", platform_assigned=2, details=generate_train_details("B-E")),
-    Train(id="TRN008", priority=Priority.LOW, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:35", planned_departure="08:50", route="B-E", section_id="SEC002", platform_assigned=3, details=generate_train_details("B-E")),
-    Train(id="TRN009", priority=Priority.HIGH, train_type=TrainType.MAINTENANCE, train_category=TrainCategory.PASSENGER, planned_arrival="08:40", planned_departure="08:55", route="C-D", section_id="SEC003", platform_assigned=4, details=generate_train_details("C-D")),
-    Train(id="TRN010", priority=Priority.LOW, train_type=TrainType.FREIGHT, train_category=TrainCategory.GOODS, planned_arrival="08:45", planned_departure="09:00", route="A-B", section_id="SEC001", platform_assigned=5, details=generate_train_details("A-B")),
+    # A-B Route - Multiple conflicts created intentionally
+    Train(id="TRN001", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.RAJDHANI, planned_arrival="08:00", planned_departure="08:15", route="A-B", section_id="SEC001", platform_assigned=1, details=generate_train_details("A-B"), speed_kmh=120),
+    Train(id="TRN002", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.SHATABDI, planned_arrival="08:10", planned_departure="08:25", route="A-B", section_id="SEC001", platform_assigned=2, details=generate_train_details("A-B"), speed_kmh=110),
+    Train(id="TRN003", priority=Priority.MEDIUM, train_type=TrainType.EXPRESS, train_category=TrainCategory.MAIL_EXPRESS, planned_arrival="08:12", planned_departure="08:27", route="A-B", section_id="SEC001", platform_assigned=1, details=generate_train_details("A-B"), speed_kmh=100),  # CONFLICT with TRN001 and TRN002
+    
+    # B-C Route - Conflicts
+    Train(id="TRN004", priority=Priority.MEDIUM, train_type=TrainType.EXPRESS, train_category=TrainCategory.MAIL_EXPRESS, planned_arrival="08:05", planned_departure="08:20", route="B-C", section_id="SEC002", platform_assigned=3, details=generate_train_details("B-C"), speed_kmh=95),
+    Train(id="TRN005", priority=Priority.MEDIUM, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:15", planned_departure="08:30", route="B-C", section_id="SEC002", platform_assigned=4, details=generate_train_details("B-C"), speed_kmh=80),  # CONFLICT with TRN004
+    Train(id="TRN006", priority=Priority.LOW, train_type=TrainType.FREIGHT, train_category=TrainCategory.GOODS, planned_arrival="08:18", planned_departure="08:50", route="B-C", section_id="SEC002", platform_assigned=5, details=generate_train_details("B-C"), speed_kmh=60),  # LONG CONFLICT with TRN005
+    
+    # C-D Route - More conflicts
+    Train(id="TRN007", priority=Priority.LOW, train_type=TrainType.FREIGHT, train_category=TrainCategory.GOODS, planned_arrival="08:20", planned_departure="08:45", route="C-D", section_id="SEC003", platform_assigned=1, details=generate_train_details("C-D"), speed_kmh=65),
+    Train(id="TRN008", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.MAIL_EXPRESS, planned_arrival="08:30", planned_departure="08:45", route="C-D", section_id="SEC003", platform_assigned=2, details=generate_train_details("C-D"), speed_kmh=105),  # CONFLICT with TRN007
+    Train(id="TRN009", priority=Priority.HIGH, train_type=TrainType.MAINTENANCE, train_category=TrainCategory.PASSENGER, planned_arrival="08:35", planned_departure="08:55", route="C-D", section_id="SEC003", platform_assigned=3, details=generate_train_details("C-D"), speed_kmh=70),  # CONFLICT with TRN008
+    
+    # D-E Route
+    Train(id="TRN010", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.SHATABDI, planned_arrival="08:25", planned_departure="08:40", route="D-E", section_id="SEC003", platform_assigned=4, details=generate_train_details("D-E"), speed_kmh=115),
+    
+    # B-E Route - Cross conflicts
+    Train(id="TRN011", priority=Priority.MEDIUM, train_type=TrainType.SUBURBAN, train_category=TrainCategory.MEMU, planned_arrival="08:20", planned_departure="08:35", route="B-E", section_id="SEC002", platform_assigned=5, details=generate_train_details("B-E"), speed_kmh=85),
+    Train(id="TRN012", priority=Priority.LOW, train_type=TrainType.SUBURBAN, train_category=TrainCategory.LOCAL, planned_arrival="08:28", planned_departure="08:50", route="B-E", section_id="SEC002", platform_assigned=6, details=generate_train_details("B-E"), speed_kmh=75),  # CONFLICT with TRN011
+    
+    # A-C Route - Alternative route trains
+    Train(id="TRN013", priority=Priority.MEDIUM, train_type=TrainType.EXPRESS, train_category=TrainCategory.PASSENGER, planned_arrival="08:15", planned_departure="08:35", route="A-C", section_id="SEC001", platform_assigned=1, details=generate_train_details("A-C"), speed_kmh=90),
+    Train(id="TRN014", priority=Priority.HIGH, train_type=TrainType.EXPRESS, train_category=TrainCategory.RAJDHANI, planned_arrival="08:22", planned_departure="08:40", route="A-C", section_id="SEC001", platform_assigned=2, details=generate_train_details("A-C"), speed_kmh=125),  # CONFLICT with TRN013
+    
+    # More freight trains for realistic load
+    Train(id="TRN015", priority=Priority.LOW, train_type=TrainType.FREIGHT, train_category=TrainCategory.GOODS, planned_arrival="08:40", planned_departure="09:15", route="A-B", section_id="SEC001", platform_assigned=3, details=generate_train_details("A-B"), speed_kmh=55),
 ]
 
 # Enhanced disaster scenarios
