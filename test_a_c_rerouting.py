@@ -6,7 +6,7 @@ Test A-C Route Blockage and A→B→C Rerouting
 import requests
 import json
 
-BASE_URL = "https://rail-optimizer-3.preview.emergentagent.com/api"
+BASE_URL = "https://smart-railway-1.preview.emergentagent.com/api"
 
 def test_a_c_rerouting():
     print("🧪 Testing A-C Route Blockage and Rerouting")
