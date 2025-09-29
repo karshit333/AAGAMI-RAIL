@@ -1580,6 +1580,16 @@ class AagamiRailAPITester:
         routes = self.test_get_routes()  # Now tests disaster effect fields
         conflicts = self.test_get_conflicts()
         
+        # ENHANCED BACKEND FEATURES TESTING (Review Request Focus)
+        print("\n🔧 ENHANCED BACKEND FEATURES TESTING")
+        print("-" * 40)
+        self.test_performance_metrics_endpoint()
+        self.test_sections_info_endpoint()
+        self.test_audit_decisions_endpoint()
+        self.test_controller_override_endpoint()
+        self.test_mock_integrations()
+        self.test_enhanced_train_classifications()
+        
         # Test optimization with ETA validation
         optimization_result = self.test_optimize_trains(trains)  # Now tests both original and optimized ETAs
         
