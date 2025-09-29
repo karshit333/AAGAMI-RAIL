@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-## user_problem_statement: Test the current backend API endpoints to understand what enhanced features are available. Verify new endpoints for performance metrics, section controller information, audit trail data, controller override functionality, and mock integrations. Test existing endpoints for enhanced train classifications and infrastructure constraints.
+## user_problem_statement: Update AAGAMI RAIL frontend to reflect enhanced backend features with realistic real-time train simulation including enhanced train classifications, performance analytics tab, and real-time train position updates.
 
 ## frontend:
   - task: "Update AI optimized schedule table to show both original ETA and current (optimized) ETA"
