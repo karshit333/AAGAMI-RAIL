@@ -801,8 +801,6 @@ function App() {
                 hasOptimized={hasOptimized}
                 performanceMetrics={performanceMetrics}
                 sectionInfo={sectionInfo}
-                simulationState={simulationState}
-                realTimeTrains={realTimeTrains}
               />
             </div>
           )}
