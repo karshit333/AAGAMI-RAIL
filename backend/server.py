@@ -1145,14 +1145,22 @@ def optimize_with_disasters(trains: List[Train], disasters: List[Disaster] = Non
                                 scheduled_train.status = "delayed" if delay < 15 else "critical"
                                 scheduled_train.optimized_arrival = minutes_to_time(scheduled_arr + delay)
                                 scheduled_train.optimized_departure = minutes_to_time(scheduled_dep + delay)
-                                explanations.append(f"🕐 EQUAL PRIORITY RESOLUTION: {scheduled_train.id[:6]} delayed {delay} min - First-In-First-Out rule applied for same priority trains on {route_id}")
+                                # FIFO resolution for same priority - detailed explanation
+                                what_changed = f"FIFO RESOLUTION: {scheduled_train.id[:6]} delayed by {delay} minutes"
+                                why_changed = f"REASON: Both trains have same priority on {route_id}, First-In-First-Out rule applied"
+                                schedule_impact = f"IMPACT: Later arriving train gets precedence, earlier train rescheduled"
+                                explanations.append(f"⏰ {what_changed} | 📏 {why_changed} | 📅 {schedule_impact}")
                             else:
                                 delay = scheduled_dep - current_arr + 5
                                 new_train.delay_minutes += delay
                                 new_train.status = "delayed" if delay < 15 else "critical"
                                 new_train.optimized_arrival = minutes_to_time(current_arr + delay)
                                 new_train.optimized_departure = minutes_to_time(current_dep + delay)
-                                explanations.append(f"🕐 EQUAL PRIORITY RESOLUTION: {train.id[:6]} delayed {delay} min - First-In-First-Out rule applied for same priority trains on {route_id}")
+                                # FIFO resolution for same priority - detailed explanation
+                                what_changed = f"FIFO RESOLUTION: {train.id[:6]} delayed by {delay} minutes"
+                                why_changed = f"REASON: Both trains have same priority on {route_id}, First-In-First-Out rule applied"
+                                schedule_impact = f"IMPACT: Earlier scheduled train gets precedence, later train rescheduled"
+                                explanations.append(f"⏰ {what_changed} | 📏 {why_changed} | 📅 {schedule_impact}")
             
             # Update train status
             if new_train.delay_minutes == 0:
