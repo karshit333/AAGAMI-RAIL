@@ -503,6 +503,14 @@ function App() {
                         {simulationRunning ? "Pause" : "Start"} Simulation
                       </Button>
                       
+                      <Button 
+                        onClick={resetSystem}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Reset System
+                      </Button>
+                      
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Speed:</span>
                         <Select value={simulationState.speed.toString()} onValueChange={setSimulationSpeed}>
