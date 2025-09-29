@@ -224,6 +224,38 @@ class SystemStatus(BaseModel):
 # Global simulation state
 SIMULATION_STATE = SimulationControl()
 ACTIVE_ALERTS = []
+class DecisionAudit(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    controller_id: str = "CTRL001"
+    section_id: str = "SEC001"
+    decision_type: str  # optimization, override, rerouting, emergency
+    train_ids: List[str]  # affected trains
+    original_plan: Dict = {}  # original schedule/routing
+    ai_recommendation: Dict = {}  # AI suggested solution
+    final_decision: Dict = {}  # actual implementation
+    override_applied: bool = False
+    override_reason: Optional[str] = None
+    performance_impact: Dict = {}  # predicted vs actual impact
+    controller_feedback: Optional[str] = None
+
+class PerformanceMetrics(BaseModel):
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    section_id: str = "SEC001"
+    total_trains: int = 0
+    on_time_trains: int = 0
+    delayed_trains: int = 0
+    average_delay: float = 0.0
+    throughput_efficiency: float = 0.0  # percentage
+    platform_utilization: float = 0.0  # percentage
+    signal_block_efficiency: float = 0.0  # percentage
+    controller_overrides: int = 0
+    ai_recommendations_accepted: int = 0
+    passenger_satisfaction_score: float = 0.0  # 0-10 scale
+
+# Global audit trail storage
+AUDIT_TRAIL: List[DecisionAudit] = []
+PERFORMANCE_HISTORY: List[PerformanceMetrics] = []
 ACTIVE_DISASTERS = []
 
 # Sample data initialization with enhanced details
