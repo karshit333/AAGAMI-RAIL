@@ -586,6 +586,72 @@ function App() {
                 </Alert>
               )}
 
+              {/* Enhanced AI Analysis & What Changed Summary */}
+              {hasOptimized && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      AI Optimization Analysis
+                    </CardTitle>
+                    <CardDescription>Detailed conflict resolution and performance improvements</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Before/After Comparison */}
+                      <div>
+                        <h4 className="font-medium mb-3">Performance Comparison</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Total Delays (Before):</span>
+                            <span className="font-medium text-red-600">
+                              {trains.reduce((sum, t) => sum + (t.delay_minutes || 0), 0)} minutes
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Total Delays (After):</span>
+                            <span className="font-medium text-green-600">
+                              {optimizedTrains.reduce((sum, t) => sum + (t.delay_minutes || 0), 0)} minutes
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Time Saved:</span>
+                            <span className="font-medium text-blue-600">
+                              {Math.max(0, trains.reduce((sum, t) => sum + (t.delay_minutes || 0), 0) - optimizedTrains.reduce((sum, t) => sum + (t.delay_minutes || 0), 0))} minutes
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Average Train Speed:</span>
+                            <span className="font-medium">
+                              {(optimizedTrains.reduce((sum, t) => sum + (t.speed_kmh || 80), 0) / optimizedTrains.length).toFixed(1)} km/h
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Conflicts Resolved */}
+                      <div>
+                        <h4 className="font-medium mb-3">Conflicts Resolved</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span>Trains Rerouted:</span>
+                            <span className="font-medium">{optimizedTrains.filter(t => t.rerouted).length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Priority Adjustments:</span>
+                            <span className="font-medium">{optimizedTrains.filter(t => t.delay_minutes > 0).length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>On-Time Trains:</span>
+                            <span className="font-medium text-green-600">{optimizedTrains.filter(t => t.delay_minutes <= 5).length}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* What Changed Summary */}
               {whatChanged && (
                 <WhatChangedSummary 
