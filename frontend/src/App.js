@@ -480,6 +480,67 @@ function App() {
                 </div>
               )}
 
+              {/* Real-Time Simulation Controls */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Real-Time Simulation
+                    <Badge variant={simulationRunning ? "default" : "secondary"}>
+                      {simulationRunning ? "LIVE" : "PAUSED"}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>Control train movement simulation and time progression</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        onClick={toggleSimulation}
+                        variant={simulationRunning ? "destructive" : "default"}
+                        size="sm"
+                      >
+                        {simulationRunning ? "Pause" : "Start"} Simulation
+                      </Button>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">Speed:</span>
+                        <Select value={simulationState.speed.toString()} onValueChange={setSimulationSpeed}>
+                          <SelectTrigger className="w-20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0.5">0.5x</SelectItem>
+                            <SelectItem value="1.0">1x</SelectItem>
+                            <SelectItem value="2.0">2x</SelectItem>
+                            <SelectItem value="5.0">5x</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm font-mono">{simulationState.current_time}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className="text-sm text-gray-600">Active Trains</div>
+                      <div className="text-lg font-bold">{trains.length}</div>
+                    </div>
+                  </div>
+                  
+                  {simulationRunning && (
+                    <div className="mt-3 p-2 bg-green-50 rounded">
+                      <div className="text-xs text-green-800 flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        Simulation running - Train positions updating every 2 seconds
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Disaster Summary */}
               {disasterSummary && (
                 <Alert>
