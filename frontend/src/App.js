@@ -569,7 +569,7 @@ function App() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(realTimeTrains.length > 0 ? realTimeTrains : trains).map((train) => (
+                        {trains.map((train) => (
                           <TableRow key={train.id} className={train.controller_override ? "bg-orange-50" : ""}>
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
