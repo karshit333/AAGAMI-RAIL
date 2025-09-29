@@ -814,6 +814,10 @@ function App() {
                 kpis={kpis} 
                 trains={optimizedTrains.length > 0 ? optimizedTrains : trains}
                 hasOptimized={hasOptimized}
+                performanceMetrics={performanceMetrics}
+                sectionInfo={sectionInfo}
+                simulationState={simulationState}
+                realTimeTrains={realTimeTrains}
               />
             </div>
           )}
