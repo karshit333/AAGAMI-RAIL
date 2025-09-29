@@ -609,9 +609,6 @@ function App() {
                             </TableCell>
                             <TableCell>
                               {formatTime(train.planned_departure)}
-                              {train.status && (
-                                <div className="text-xs capitalize text-gray-500">{train.status.replace('_', ' ')}</div>
-                              )}
                             </TableCell>
                           </TableRow>
                         ))}
