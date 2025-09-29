@@ -82,6 +82,7 @@ class TrainDetails(BaseModel):
     current_load: int = 320
     origin: str = "Delhi Junction"
     destination: str = "Mumbai Central"
+    stops: List[str] = []  # List of stops/stations
     fuel_consumption: float = 2.5  # L/km
     passenger_count: int = 320
     coach_count: int = 12
