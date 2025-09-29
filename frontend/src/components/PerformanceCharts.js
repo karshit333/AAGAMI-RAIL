@@ -219,15 +219,15 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
             <Separator className="my-4" />
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-blue-600">{sectionData.infrastructure_summary?.total_platforms}</p>
+                <p className="text-2xl font-bold text-blue-600">{sectionInfo.infrastructure_summary?.total_platforms}</p>
                 <p className="text-sm text-gray-600">Total Platforms</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">{sectionData.infrastructure_summary?.total_tracks}</p>
+                <p className="text-2xl font-bold text-green-600">{sectionInfo.infrastructure_summary?.total_tracks}</p>
                 <p className="text-sm text-gray-600">Track Sections</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-purple-600">{sectionData.sections?.length}</p>
+                <p className="text-2xl font-bold text-purple-600">{sectionInfo.sections?.length}</p>
                 <p className="text-sm text-gray-600">Control Sections</p>
               </div>
             </div>
