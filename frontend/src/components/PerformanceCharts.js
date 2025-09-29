@@ -195,7 +195,7 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {sectionData.sections?.map((section) => (
+              {sectionInfo.sections?.map((section) => (
                 <div key={section.section_id} className="p-4 border rounded-lg">
                   <h4 className="font-medium text-sm text-blue-600">{section.section_id}</h4>
                   <p className="text-xs text-gray-600 mb-2">{section.controller_name}</p>
