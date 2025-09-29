@@ -65,18 +65,15 @@ function App() {
     loadPerformanceMetrics();
     loadSectionInfo();
     
-    // Set up polling for real-time updates
+    // Set up polling for updates
     const interval = setInterval(() => {
       if (activeTab === "dashboard") {
         loadSystemAlerts();
-        if (simulationRunning) {
-          updateSimulationState();
-        }
       }
       if (activeTab === "analytics") {
         loadPerformanceMetrics();
       }
-    }, simulationRunning ? 2000 : 5000); // Faster updates when simulation is running
+    }, 5000);
     
     return () => clearInterval(interval);
   }, [activeTab, simulationRunning]);
