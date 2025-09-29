@@ -513,19 +513,35 @@ function App() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {trains.map((train) => (
-                          <TableRow key={train.id}>
-                            <TableCell className="font-medium">{train.id.slice(0, 6)}</TableCell>
+                        {(realTimeTrains.length > 0 ? realTimeTrains : trains).map((train) => (
+                          <TableRow key={train.id} className={train.controller_override ? "bg-orange-50" : ""}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${getTrainStatusColor(train)}`}></div>
+                                {train.id.slice(0, 6)}
+                                {train.controller_override && (
+                                  <Badge variant="destructive" className="text-xs">MANUAL</Badge>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="text-sm">
                                 <div className="font-medium text-blue-600">{train.train_type || 'Express'}</div>
                                 <div className="text-xs text-gray-500">{train.train_category || 'Mail/Express'}</div>
+                                {train.section_id && (
+                                  <div className="text-xs text-purple-600">Sec: {train.section_id}</div>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
                                 {train.route}
                               </Badge>
+                              {simulationRunning && train.current_position !== undefined && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Progress: {(train.current_position * 100).toFixed(0)}%
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>
                               <Badge variant={getPriorityVariant(train.priority)}>
@@ -537,8 +553,18 @@ function App() {
                                 <MapPin className="h-3 w-3 text-gray-400" />
                                 <span className="text-sm">P{train.platform_assigned || 'TBA'}</span>
                               </div>
+                              {train.details && (
+                                <div className="text-xs text-gray-500">
+                                  {train.details.passenger_count} pax
+                                </div>
+                              )}
                             </TableCell>
-                            <TableCell>{formatTime(train.planned_arrival)}</TableCell>
+                            <TableCell>
+                              {formatTime(train.planned_arrival)}
+                              {train.delay_minutes > 0 && (
+                                <div className="text-xs text-red-500">+{train.delay_minutes}m</div>
+                              )}
+                            </TableCell>
                             <TableCell>{formatTime(train.planned_departure)}</TableCell>
                           </TableRow>
                         ))}
