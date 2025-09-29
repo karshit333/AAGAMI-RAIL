@@ -23,8 +23,8 @@ const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sec
     }
   };
 
-  // Use real-time trains data if available
-  const currentTrains = realTimeTrains && realTimeTrains.length > 0 ? realTimeTrains : trains;
+  // Use current trains data
+  const currentTrains = trains;
   
   // Enhanced KPI calculations with real-time data
   const enhancedKPIs = performanceMetrics ? {
