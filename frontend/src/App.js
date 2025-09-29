@@ -123,53 +123,8 @@ function App() {
     }
   };
 
-  const updateSimulationState = async () => {
-    try {
-      // Update train positions and status with continuous progression
-      const trainsRes = await axios.get(`${API}/trains`);
-      const updatedTrains = trainsRes.data.map(train => ({
-        ...train,
-        current_position: Math.min((train.current_position || 0) + 0.01 * simulationState.speed, 1.0),
-        status: train.delay_minutes > 10 ? "critical" : train.delay_minutes > 5 ? "delayed" : "on_time"
-      }));
-      
-      setRealTimeTrains(updatedTrains);
-      
-      // Update simulation time with proper speed control (faster progression)
-      const currentMinutes = parseInt(simulationState.current_time.split(':')[0]) * 60 + 
-                           parseInt(simulationState.current_time.split(':')[1]);
-      const timeIncrement = Math.round(2 * simulationState.speed); // 2 minutes per update, scaled by speed
-      const newMinutes = currentMinutes + timeIncrement;
-      const newHours = Math.floor(newMinutes / 60) % 24;
-      const newMins = newMinutes % 60;
-      
-      setSimulationState(prev => ({
-        ...prev,
-        current_time: `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`
-      }));
-    } catch (error) {
-      console.error("Error updating simulation:", error);
-    }
-  };
-
-  const toggleSimulation = () => {
-    setSimulationRunning(!simulationRunning);
-    setSimulationState(prev => ({
-      ...prev,
-      state: simulationRunning ? "paused" : "playing"
-    }));
-  };
-
-  const setSimulationSpeed = (speed) => {
-    setSimulationState(prev => ({
-      ...prev,
-      speed: parseFloat(speed)
-    }));
-  };
-
   const resetSystem = async () => {
     try {
-      setSimulationRunning(false);
       setHasOptimized(false);
       setOptimizedTrains([]);
       setKpis({});
@@ -178,13 +133,6 @@ function App() {
       setSystemAlerts([]);
       setWhatChanged(null);
       setDisasterSummary("");
-      setRealTimeTrains([]);
-      setSimulationState({
-        state: "paused",
-        speed: 1.0,
-        current_time: "08:00",
-        auto_advance: true
-      });
       
       // Reload original data
       await loadInitialData();
