@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { BarChart3, Activity, Users, Clock, Zap, MapPin, Settings, TrendingUp, AlertTriangle } from 'lucide-react';
 
-const PerformanceCharts = ({ kpis, trains, hasOptimized }) => {
+const PerformanceCharts = ({ kpis, trains, hasOptimized, performanceMetrics, sectionInfo, simulationState, realTimeTrains }) => {
   const [performanceData, setPerformanceData] = useState(null);
   const [sectionData, setSectionData] = useState(null);
   const [auditData, setAuditData] = useState(null);
