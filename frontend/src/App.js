@@ -135,20 +135,21 @@ function App() {
 
   const updateSimulationState = async () => {
     try {
-      // Update train positions and status
+      // Update train positions and status with continuous progression
       const trainsRes = await axios.get(`${API}/trains`);
       const updatedTrains = trainsRes.data.map(train => ({
         ...train,
-        current_position: Math.min(train.current_position + 0.02 * simulationState.speed, 1.0),
+        current_position: Math.min((train.current_position || 0) + 0.01 * simulationState.speed, 1.0),
         status: train.delay_minutes > 10 ? "critical" : train.delay_minutes > 5 ? "delayed" : "on_time"
       }));
       
       setRealTimeTrains(updatedTrains);
       
-      // Update simulation time
+      // Update simulation time with proper speed control (faster progression)
       const currentMinutes = parseInt(simulationState.current_time.split(':')[0]) * 60 + 
                            parseInt(simulationState.current_time.split(':')[1]);
-      const newMinutes = currentMinutes + (1 * simulationState.speed);
+      const timeIncrement = Math.round(2 * simulationState.speed); // 2 minutes per update, scaled by speed
+      const newMinutes = currentMinutes + timeIncrement;
       const newHours = Math.floor(newMinutes / 60) % 24;
       const newMins = newMinutes % 60;
       
