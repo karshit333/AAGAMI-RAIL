@@ -539,13 +539,7 @@ function App() {
 
               {/* AI Decision Explanations section removed - reduced clutter */}
 
-              {/* What Changed Summary */}
-              {whatChanged && (
-                <WhatChangedSummary 
-                  whatChanged={whatChanged}
-                  isVisible={hasOptimized}
-                />
-              )}
+              {/* What Changed Summary - Removed to avoid misleading delay information */}
 
               {/* Schedule Comparison */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
